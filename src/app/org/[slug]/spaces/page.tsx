@@ -117,7 +117,7 @@ const Page = () => {
         )}
       </div>
       {spaces.isLoading ? (
-        <div className="grid place-items-center py-16">
+        <div className="grid h-full place-items-center py-16">
           <Loader2Icon className="text-muted-foreground size-6 animate-spin" />
         </div>
       ) : spaces.data && spaces.data.length > 0 ? (
@@ -137,7 +137,7 @@ const Page = () => {
           ))}
         </div>
       ) : (
-        <div className="rounded-xs border border-dashed p-12 text-center">
+        <div className="h-full rounded-xs border border-dashed p-12 text-center">
           <p className="text-muted-foreground">No spaces yet.</p>
           {canManage && (
             <p className="text-muted-foreground text-sm">Create one to start tracking work.</p>

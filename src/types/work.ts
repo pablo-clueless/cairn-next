@@ -1,4 +1,4 @@
-import { Bookmark, Bug, SquareCheck, SquareStack, Zap } from "lucide-react";
+import { Bookmark, Bug, LucideIcon, SquareCheck, SquareStack, Zap } from "lucide-react";
 
 export type IssuePriority = "lowest" | "low" | "medium" | "high" | "highest";
 export type IssueType = "epic" | "story" | "task" | "bug" | "subtask";
@@ -19,16 +19,25 @@ export const ISSUE_TYPES: { label: string; value: IssueType }[] = [
   { label: "Bug", value: "bug" },
   { label: "Subtask", value: "subtask" },
 ];
-export const ISSUE_TYPE_GROUPS = [
+type IssueTypeGroup = {
+  name: string;
+  issue_types: Array<{
+    label: string;
+    value: string;
+    icon?: LucideIcon;
+  }>;
+};
+
+export const ISSUE_TYPE_GROUPS: IssueTypeGroup[] = [
   {
-    group: "",
+    name: "",
     issue_types: [
-      { label: "All standard work types", value: "" },
-      { label: "All sub-tasks", value: "" },
+      { label: "All standard work types", value: "all-standard" },
+      { label: "All sub-tasks", value: "all-subtask" },
     ],
   },
   {
-    group: "Standard work type",
+    name: "Standard work type",
     issue_types: [
       { label: "Epic", value: "epic", icon: Zap },
       { label: "Bug", value: "bug", icon: Bug },
@@ -36,7 +45,7 @@ export const ISSUE_TYPE_GROUPS = [
       { label: "Task", value: "task", icon: SquareCheck },
     ],
   },
-  { group: "Subtasks", issue_types: [{ label: "Subtasks", value: "subtask", icon: SquareStack }] },
+  { name: "Subtasks", issue_types: [{ label: "Subtasks", value: "subtask", icon: SquareStack }] },
 ];
 
 export const STATUS_LABELS: Record<IssueStatus, string> = {
@@ -121,6 +130,7 @@ export interface Issue {
   reporter_id?: string | null;
   reporter_name?: string | null;
   sprint_id?: string | null;
+  due_date?: string | null; // YYYY-MM-DD (date-only); may include a time component from the API
   created_at: string;
   updated_at: string;
 }
@@ -170,6 +180,7 @@ export interface CreateIssueInput {
   status_id?: string; // defaults to the space's first workflow status
   priority?: IssuePriority;
   assignee_id?: string;
+  due_date?: string; // YYYY-MM-DD; omit/empty for no due date
 }
 
 export interface IssueUpdate {
@@ -179,6 +190,7 @@ export interface IssueUpdate {
   status_id?: string; // the workflow status to move the issue to
   priority?: IssuePriority;
   assignee_id?: string; // "" unassigns
+  due_date?: string; // "" clears the due date
   /** @deprecated backend ignores this; use status_id. Kept until all callers migrate. */
   status?: IssueStatus;
 }

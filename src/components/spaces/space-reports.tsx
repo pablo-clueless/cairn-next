@@ -3,7 +3,13 @@
 import { Loader2Icon } from "lucide-react";
 
 import { useIssues } from "@/hooks/use-issues";
-import { ISSUE_PRIORITIES, ISSUE_STATUSES, ISSUE_TYPES, STATUS_LABELS, type Issue } from "@/types";
+import {
+  ISSUE_PRIORITIES,
+  ISSUE_TYPES,
+  STATUS_CATEGORIES,
+  STATUS_CATEGORY_LABELS,
+  type Issue,
+} from "@/types";
 
 interface Row {
   label: string;
@@ -51,18 +57,21 @@ export function SpaceReports({ slug, spaceKey }: { slug: string; spaceKey: strin
     <div className="grid gap-4 lg:grid-cols-3">
       <BarChart
         title="Status"
-        rows={ISSUE_STATUSES.map((s) => ({
-          label: STATUS_LABELS[s],
-          value: tally((i) => i.status === s),
+        rows={STATUS_CATEGORIES.map((s) => ({
+          label: STATUS_CATEGORY_LABELS[s],
+          value: tally((i) => i.status_category === s),
         }))}
       />
       <BarChart
         title="Type"
-        rows={ISSUE_TYPES.map((t) => ({ label: t, value: tally((i) => i.type === t) }))}
+        rows={ISSUE_TYPES.map((t) => ({ label: t.label, value: tally((i) => i.type === t.value) }))}
       />
       <BarChart
         title="Priority"
-        rows={ISSUE_PRIORITIES.map((p) => ({ label: p, value: tally((i) => i.priority === p) }))}
+        rows={ISSUE_PRIORITIES.map((p) => ({
+          label: p.label,
+          value: tally((i) => i.priority === p.value),
+        }))}
       />
     </div>
   );

@@ -57,7 +57,6 @@ export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string 
         slug={slug}
         spaceKey={spaceKey}
         filters={[]}
-        issues={issues}
         members={members}
         onCompleteSprint={() => {}}
         onFilterChange={() => {}}

@@ -18,16 +18,9 @@ import {
 } from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/client";
 import { useMembers } from "@/hooks/use-orgs";
+import { useStatuses } from "@/hooks/use-statuses";
 import { useDeleteIssue, useIssue, useUpdateIssue } from "@/hooks/use-issues";
-import {
-  ISSUE_PRIORITIES,
-  ISSUE_STATUSES,
-  ISSUE_TYPES,
-  STATUS_LABELS,
-  type IssuePriority,
-  type IssueStatus,
-  type IssueType,
-} from "@/types";
+import { ISSUE_PRIORITIES, ISSUE_TYPES, type IssuePriority, type IssueType } from "@/types";
 
 /** Radix Select forbids an empty-string value, so represent "no assignee" with a sentinel. */
 const UNASSIGNED = "__unassigned__";
@@ -44,6 +37,7 @@ const Page = () => {
   const router = useRouter();
   const issue = useIssue(slug, issueKey);
   const members = useMembers(slug);
+  const statuses = useStatuses(slug, issue.data?.space_key ?? "");
   const updateIssue = useUpdateIssue(slug);
   const deleteIssue = useDeleteIssue(slug);
 
@@ -123,14 +117,14 @@ const Page = () => {
         </div>
         <div className="space-y-4">
           <Field label="Status">
-            <Select value={it.status} onValueChange={(v) => patch({ status: v as IssueStatus })}>
+            <Select value={it.status_id} onValueChange={(v) => patch({ status_id: v })}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ISSUE_STATUSES.map((st) => (
-                  <SelectItem key={st} value={st}>
-                    {STATUS_LABELS[st]}
+                {(statuses.data ?? []).map((st) => (
+                  <SelectItem key={st.id} value={st.id}>
+                    {st.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -184,6 +178,13 @@ const Page = () => {
                 ))}
               </SelectContent>
             </Select>
+          </Field>
+          <Field label="Due date">
+            <Input
+              type="date"
+              value={it.due_date ? it.due_date.slice(0, 10) : ""}
+              onChange={(e) => patch({ due_date: e.target.value })}
+            />
           </Field>
           <Field label="Reporter">
             <p className="text-sm">{it.reporter_name ?? "—"}</p>

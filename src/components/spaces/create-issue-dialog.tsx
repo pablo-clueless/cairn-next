@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { PlusIcon } from "lucide-react";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -29,6 +30,7 @@ const schema = z.object({
   description: z.string().optional(),
   priority: issuePriority,
   statusId: z.string(),
+  dueDate: z.date().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -39,6 +41,7 @@ const defaultValues: FormValues = {
   description: "",
   priority: "medium",
   statusId: "",
+  dueDate: undefined,
 };
 
 export function CreateIssueDialog({ slug, spaceKey }: { slug: string; spaceKey: string }) {
@@ -59,6 +62,7 @@ export function CreateIssueDialog({ slug, spaceKey }: { slug: string; spaceKey: 
     statusId: { label: "Status", type: "select", options: STATUSES },
     title: { label: "Title", type: "text" },
     type: { label: "Type", type: "select", options: ISSUE_TYPES },
+    dueDate: { label: "Due date", type: "date", placeholder: "No due date" },
     description: { label: "Description", type: "textarea" },
   };
 
@@ -70,6 +74,7 @@ export function CreateIssueDialog({ slug, spaceKey }: { slug: string; spaceKey: 
         description: values.description || undefined,
         status_id: values.statusId || undefined,
         priority: values.priority,
+        due_date: values.dueDate ? format(values.dueDate, "yyyy-MM-dd") : undefined,
       },
       {
         onSuccess: (issue) => {
@@ -102,7 +107,10 @@ export function CreateIssueDialog({ slug, spaceKey }: { slug: string; spaceKey: 
                   <div>{field("priority")}</div>
                   <div>{field("statusId")}</div>
                 </div>
-                {field("type")}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>{field("type")}</div>
+                  <div>{field("dueDate")}</div>
+                </div>
                 {field("description")}
               </div>
               <Button type="submit" className="w-full" disabled={isPending}>

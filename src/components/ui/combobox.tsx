@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
+import { ChevronDownIcon, XIcon, CheckIcon, SearchIcon } from "lucide-react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import * as React from "react";
 
@@ -23,7 +23,10 @@ function ComboboxTrigger({ className, children, ...props }: ComboboxPrimitive.Tr
   return (
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
-      className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+      className={cn(
+        "focus-visible:border-primary-400 data-placeholder:text-muted-foreground data-[open]:border-primary-500 data-[open]:text-primary-600 dark:bg-input/30 dark:hover:bg-input/50 flex h-8 w-fit items-center justify-between gap-1.5 rounded-xs border bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-red-500 *:data-[slot=combobox-value]:line-clamp-1 *:data-[slot=combobox-value]:flex *:data-[slot=combobox-value]:items-center *:data-[slot=combobox-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -51,13 +54,20 @@ function ComboboxInput({
   disabled = false,
   showTrigger = true,
   showClear = false,
+  showSearch = false,
   ...props
 }: ComboboxPrimitive.Input.Props & {
   showTrigger?: boolean;
   showClear?: boolean;
+  showSearch?: boolean;
 }) {
   return (
     <InputGroup className={cn("w-auto", className)}>
+      {showSearch && (
+        <InputGroupAddon align="inline-start">
+          <SearchIcon className="text-muted-foreground" />
+        </InputGroupAddon>
+      )}
       <ComboboxPrimitive.Input render={<InputGroupInput disabled={disabled} />} {...props} />
       <InputGroupAddon align="inline-end">
         {showTrigger && (
@@ -66,7 +76,7 @@ function ComboboxInput({
             variant="ghost"
             asChild
             data-slot="input-group-button"
-            className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
+            className="h-auto border-0 bg-transparent group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent dark:bg-transparent"
             disabled={disabled}
           >
             <ComboboxTrigger />
@@ -106,7 +116,7 @@ function ComboboxContent({
           data-slot="combobox-content"
           data-chips={!!anchor}
           className={cn(
-            "group/combobox-content bg-background text-foreground data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input/30 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] origin-(--transform-origin) overflow-hidden rounded-xs shadow-md duration-100 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none",
+            "group/combobox-content border-primary-500 bg-background text-foreground data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 *:data-[slot=input-group]:border-input/30 *:data-[slot=input-group]:bg-input/30 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative max-h-(--available-height) w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+(--spacing(7)))] origin-(--transform-origin) overflow-hidden rounded-xs border shadow-md duration-100 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none",
             className,
           )}
           {...props}
@@ -134,7 +144,7 @@ function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        "data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-xs py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground relative flex w-full cursor-pointer items-center gap-2 rounded-xs py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -147,6 +157,26 @@ function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.
       >
         <CheckIcon className="pointer-events-none" />
       </ComboboxPrimitive.ItemIndicator>
+    </ComboboxPrimitive.Item>
+  );
+}
+
+function ComboboxCheckboxItem({ className, children, ...props }: ComboboxPrimitive.Item.Props) {
+  return (
+    <ComboboxPrimitive.Item
+      data-slot="combobox-item"
+      className={cn(
+        "group/combobox-item data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className,
+      )}
+      {...props}
+    >
+      <span className="border-input group-data-[selected]/combobox-item:border-primary-500 group-data-[selected]/combobox-item:bg-primary-500 flex size-4 shrink-0 items-center justify-center rounded-[4px] border bg-transparent text-white transition-colors">
+        <ComboboxPrimitive.ItemIndicator>
+          <CheckIcon className="size-3" />
+        </ComboboxPrimitive.ItemIndicator>
+      </span>
+      {children}
     </ComboboxPrimitive.Item>
   );
 }
@@ -261,6 +291,7 @@ export {
   ComboboxContent,
   ComboboxList,
   ComboboxItem,
+  ComboboxCheckboxItem,
   ComboboxGroup,
   ComboboxLabel,
   ComboboxCollection,

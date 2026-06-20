@@ -4,20 +4,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ManageStatusesDialog } from "./manage-statuses-dialog";
-import type { Issue, Member, QueryReturn } from "@/types";
+import type { Member, QueryReturn } from "@/types";
 import { getInitials } from "@/lib/string";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
 interface Props {
   filters: string[];
-  issues: QueryReturn<Issue[]>;
   members: QueryReturn<Member[]>;
-  onCompleteSprint: () => void;
   onFilterChange: (filters: string[]) => void;
   onSearch: (query: string) => void;
   slug: string;
   spaceKey: string;
+  onCompleteSprint?: () => void;
+  showGroup?: boolean;
+  showTrend?: boolean;
 }
 
 const GROUPS = [
@@ -27,11 +28,17 @@ const GROUPS = [
   { label: "Subtask", value: "subtask" },
 ];
 
-export const IssueFunctions = ({ slug, spaceKey, issues, onCompleteSprint, onSearch }: Props) => {
+export const IssueFunctions = ({
+  slug,
+  spaceKey,
+  members,
+  onCompleteSprint,
+  onSearch,
+  showGroup = true,
+  showTrend = true,
+}: Props) => {
   const assignees = [
-    ...new Set(
-      issues.data?.map((issue) => issue.assignee_name).filter((name): name is string => !!name),
-    ),
+    ...new Set(members.data?.map((issue) => issue.name).filter((name): name is string => !!name)),
   ];
 
   return (
@@ -71,24 +78,30 @@ export const IssueFunctions = ({ slug, spaceKey, issues, onCompleteSprint, onSea
         </div>
       </div>
       <div className="flex items-center gap-x-4">
-        <Button className="w-32" onClick={onCompleteSprint}>
-          Complete Sprint
-        </Button>
-        <Select>
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Group" />
-          </SelectTrigger>
-          <SelectContent align="center" className="w-32">
-            {GROUPS.map((group) => (
-              <SelectItem key={group.value} value={group.value}>
-                {group.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button size="icon" variant="outline">
-          <TrendingUp className="size-4" />
-        </Button>
+        {onCompleteSprint && (
+          <Button className="w-32" onClick={onCompleteSprint}>
+            Complete Sprint
+          </Button>
+        )}
+        {showGroup && (
+          <Select>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Group" />
+            </SelectTrigger>
+            <SelectContent align="center" className="w-32">
+              {GROUPS.map((group) => (
+                <SelectItem key={group.value} value={group.value}>
+                  {group.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {showTrend && (
+          <Button size="icon" variant="outline">
+            <TrendingUp className="size-4" />
+          </Button>
+        )}
         <ManageStatusesDialog slug={slug} spaceKey={spaceKey} />
         <Popover>
           <PopoverTrigger asChild>

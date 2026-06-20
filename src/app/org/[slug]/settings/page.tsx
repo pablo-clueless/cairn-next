@@ -212,8 +212,8 @@ const Page = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {SUPPORTED_CURRENCIES.map((cur) => (
-                          <SelectItem key={cur} value={cur}>
-                            {cur}
+                          <SelectItem key={cur.value} value={cur.value}>
+                            {cur.label}
                           </SelectItem>
                         ))}
                       </SelectContent>

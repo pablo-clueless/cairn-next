@@ -25,15 +25,9 @@ import {
 } from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/client";
 import { useUpdateIssue } from "@/hooks/use-issues";
+import { useStatuses } from "@/hooks/use-statuses";
 import { getInitials } from "@/lib/string";
-import {
-  ISSUE_STATUSES,
-  STATUS_LABELS,
-  type Issue,
-  type IssuePriority,
-  type IssueStatus,
-  type IssueType,
-} from "@/types";
+import { type Issue, type IssuePriority, type IssueType } from "@/types";
 import { cn } from "@/lib/utils";
 
 const TYPE_ICON: Record<IssueType, LucideIcon> = {
@@ -60,6 +54,7 @@ const PRIORITY: Record<IssuePriority, { icon: LucideIcon; color: string }> = {
 
 export function BacklogRow({ issue, slug }: { issue: Issue; slug: string }) {
   const updateIssue = useUpdateIssue(slug);
+  const statuses = useStatuses(slug, issue.space_key);
   const TypeIcon = TYPE_ICON[issue.type];
   const prio = PRIORITY[issue.priority];
   const href = `/org/${slug}/issues/${issue.key}`;
@@ -82,10 +77,10 @@ export function BacklogRow({ issue, slug }: { issue: Issue; slug: string }) {
       </span>
 
       <Select
-        value={issue.status}
+        value={issue.status_id}
         onValueChange={(v) =>
           updateIssue.mutate(
-            { key: issue.key, update: { status: v as IssueStatus } },
+            { key: issue.key, update: { status_id: v } },
             { onError: (e) => toast.error(getApiErrorMessage(e)) },
           )
         }
@@ -94,9 +89,9 @@ export function BacklogRow({ issue, slug }: { issue: Issue; slug: string }) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {ISSUE_STATUSES.map((s) => (
-            <SelectItem key={s} value={s} className="text-xs uppercase">
-              {STATUS_LABELS[s]}
+          {(statuses.data ?? []).map((s) => (
+            <SelectItem key={s.id} value={s.id} className="text-xs uppercase">
+              {s.name}
             </SelectItem>
           ))}
         </SelectContent>
