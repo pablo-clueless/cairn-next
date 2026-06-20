@@ -1,6 +1,8 @@
+import { Bookmark, Bug, SquareCheck, SquareStack, Zap } from "lucide-react";
+
+export type IssuePriority = "lowest" | "low" | "medium" | "high" | "highest";
 export type IssueType = "epic" | "story" | "task" | "bug" | "subtask";
 export type IssueStatus = "todo" | "in_progress" | "done";
-export type IssuePriority = "lowest" | "low" | "medium" | "high" | "highest";
 
 export const ISSUE_STATUSES: IssueStatus[] = ["todo", "in_progress", "done"];
 export const ISSUE_PRIORITIES: { label: string; value: IssuePriority }[] = [
@@ -16,6 +18,25 @@ export const ISSUE_TYPES: { label: string; value: IssueType }[] = [
   { label: "Task", value: "task" },
   { label: "Bug", value: "bug" },
   { label: "Subtask", value: "subtask" },
+];
+export const ISSUE_TYPE_GROUPS = [
+  {
+    group: "",
+    issue_types: [
+      { label: "All standard work types", value: "" },
+      { label: "All sub-tasks", value: "" },
+    ],
+  },
+  {
+    group: "Standard work type",
+    issue_types: [
+      { label: "Epic", value: "epic", icon: Zap },
+      { label: "Bug", value: "bug", icon: Bug },
+      { label: "Story", value: "story", icon: Bookmark },
+      { label: "Task", value: "task", icon: SquareCheck },
+    ],
+  },
+  { group: "Subtasks", issue_types: [{ label: "Subtasks", value: "subtask", icon: SquareStack }] },
 ];
 
 export const STATUS_LABELS: Record<IssueStatus, string> = {

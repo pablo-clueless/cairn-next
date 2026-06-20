@@ -116,7 +116,6 @@ const Page = () => {
           </Dialog>
         )}
       </div>
-
       {spaces.isLoading ? (
         <div className="grid place-items-center py-16">
           <Loader2Icon className="text-muted-foreground size-6 animate-spin" />

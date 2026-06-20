@@ -1,10 +1,10 @@
-import { Placeholder } from "@/components/shared/placeholder";
+"use client";
+
+import { useParams } from "next/navigation";
+
+import { IssueTimeline } from "@/components/spaces";
 
 export default function Page() {
-  return (
-    <Placeholder
-      title="Timeline"
-      note="A timeline of issues by schedule arrives once issues have due dates (Phase 4+)."
-    />
-  );
+  const { slug, spaceKey } = useParams<{ slug: string; spaceKey: string }>();
+  return <IssueTimeline slug={slug} spaceKey={spaceKey} />;
 }

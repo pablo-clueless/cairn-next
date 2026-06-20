@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import {
   CalendarDays,
+  ChartNoAxesGantt,
   ClipboardList,
   Columns3,
   FileText,
   Globe,
   List,
   ListChecks,
-  Waypoints,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,7 +22,7 @@ const TABS: { segment: string; label: string; icon: LucideIcon }[] = [
   { segment: "board", label: "Board", icon: Columns3 },
   { segment: "backlog", label: "Backlog", icon: ListChecks },
   { segment: "calendar", label: "Calendar", icon: CalendarDays },
-  { segment: "timeline", label: "Timeline", icon: Waypoints },
+  { segment: "timeline", label: "Timeline", icon: ChartNoAxesGantt },
   { segment: "docs", label: "Docs", icon: FileText },
   { segment: "forms", label: "Forms", icon: ClipboardList },
 ];

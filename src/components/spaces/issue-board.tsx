@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import { Kanban, type KanbanColumnConfig } from "@/components/shared/kanban";
 import { useStatuses, useReorderStatuses } from "@/hooks/use-statuses";
 import { useIssues, useUpdateIssue } from "@/hooks/use-issues";
-import { type Issue } from "@/types";
 import { IssueFunctions } from "./issue-functions";
 import { getApiErrorMessage } from "@/lib/client";
 import { useMembers } from "@/hooks/use-orgs";
 import { IssueCard } from "./issue-card";
+import { type Issue } from "@/types";
 
 /** Kanban board for a space, grouped by status with drag-and-drop. */
 export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string }) {
@@ -21,8 +21,6 @@ export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string 
   const updateIssue = useUpdateIssue(slug);
   const members = useMembers(slug);
 
-  // One column per status, keyed by status id so each status is its own column
-  // (and the card-drag target is a real status_id, not a category).
   const COLUMNS: KanbanColumnConfig[] = useMemo(() => {
     if (!statuses.data) return [];
     return statuses.data.map((status) => ({
@@ -35,7 +33,6 @@ export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string 
 
   const handleReorder = (columns: KanbanColumnConfig[]) => {
     if (!statuses.data) return;
-    // Each column's new index becomes the new position of that status.
     const positionById = new Map(columns.map((col, index) => [col.id, index]));
     const updated = statuses.data.map((status) => ({
       id: status.id,

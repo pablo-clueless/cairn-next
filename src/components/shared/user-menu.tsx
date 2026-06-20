@@ -79,7 +79,11 @@ export function UserMenu() {
                 </button>
               ))}
             </div>
-            <button type="button" className={itemClass} onClick={() => router.push("/dashboard/new")}>
+            <button
+              type="button"
+              className={itemClass}
+              onClick={() => router.push("/dashboard/new")}
+            >
               <Plus className="size-3.5" /> New organization
             </button>
           </div>

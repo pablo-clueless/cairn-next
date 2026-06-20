@@ -35,10 +35,7 @@ export const useCreateStatus = (slug: string, spaceKey: string) => {
   return useMutation({
     mutationFn: (input: CreateStatusInput) =>
       http
-        .post<HttpResponse<WorkflowStatus>>(
-          `/v1/orgs/${slug}/spaces/${spaceKey}/statuses`,
-          input,
-        )
+        .post<HttpResponse<WorkflowStatus>>(`/v1/orgs/${slug}/spaces/${spaceKey}/statuses`, input)
         .then((env) => env.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: statusesKey(slug, spaceKey) }),
   });

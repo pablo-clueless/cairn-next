@@ -10,14 +10,14 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
 interface Props {
-  slug: string;
-  spaceKey: string;
   filters: string[];
   issues: QueryReturn<Issue[]>;
   members: QueryReturn<Member[]>;
   onCompleteSprint: () => void;
   onFilterChange: (filters: string[]) => void;
   onSearch: (query: string) => void;
+  slug: string;
+  spaceKey: string;
 }
 
 const GROUPS = [

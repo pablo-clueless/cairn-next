@@ -1,7 +1,10 @@
-import { Placeholder } from "@/components/shared/placeholder";
+"use client";
+
+import { useParams } from "next/navigation";
+
+import { IssueCalendar } from "@/components/spaces";
 
 export default function Page() {
-  return (
-    <Placeholder title="Calendar" note="A calendar of issues by date arrives with scheduling." />
-  );
+  const { slug, spaceKey } = useParams<{ slug: string; spaceKey: string }>();
+  return <IssueCalendar slug={slug} spaceKey={spaceKey} />;
 }

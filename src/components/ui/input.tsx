@@ -44,7 +44,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   };
 
   return (
-    <div className="relative w-full">
+    <div className={cn("relative w-full", className)}>
       {isSearch && (
         <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
       )}
@@ -59,6 +59,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
           isPassword && "pr-24",
           isSearch && "pl-9",
           className,
+          "w-full",
         )}
         {...props}
         onChange={handleChange}

@@ -73,10 +73,7 @@ export const resolveDisabled = (
  * Handles array indices, e.g. `getFieldError(errors, "contacts.0.email")`
  * walks `errors.contacts[0].email.message`.
  */
-export const getFieldError = (
-  errors: FieldErrors,
-  name: string,
-): string | undefined => {
+export const getFieldError = (errors: FieldErrors, name: string): string | undefined => {
   const node = name.split(".").reduce<unknown>((acc, key) => {
     if (acc == null) return acc;
     return (acc as Record<string, unknown>)[key];
@@ -108,9 +105,7 @@ export const emptyValueForField = (field: StandardFormField): unknown => {
 };
 
 /** Build an empty item object for an object-array, respecting each sub-field's type. */
-export const emptyItemForObjectArray = (
-  field: ObjectArrayFormField,
-): Record<string, unknown> =>
+export const emptyItemForObjectArray = (field: ObjectArrayFormField): Record<string, unknown> =>
   Object.fromEntries(
     Object.entries(field.itemFields).map(([key, sub]) => [key, emptyValueForField(sub)]),
   );

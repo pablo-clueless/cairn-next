@@ -24,7 +24,7 @@ interface StandardFieldInputProps<T extends FieldValues> {
 }
 
 const inputClass =
-  "w-full rounded-xs border border-input bg-background px-3 py-2 h-9 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-xs border border-input bg-background px-3 py-2 h-9 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary-400 disabled:cursor-not-allowed disabled:opacity-50";
 
 export const StandardFieldInput = <T extends FieldValues>({
   name,
