@@ -2,9 +2,9 @@
 
 import { useMutation, useQueryClient, type Query } from "@tanstack/react-query";
 
+import type { CreateSprintInput, HttpResponse, Sprint, SprintUpdate } from "@/types";
 import { useApiMutation, useApiQuery } from "@/lib/query";
 import { http } from "@/lib/client";
-import type { CreateSprintInput, HttpResponse, Sprint, SprintUpdate } from "@/types";
 
 const data = <T>(raw: unknown) => (raw as HttpResponse<T>).data;
 

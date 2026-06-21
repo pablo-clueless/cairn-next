@@ -1,3 +1,5 @@
+import { Ban, CircleAlert, CircleCheck, CornerUpRight, Link, Webhook } from "lucide-react";
+
 export const DAYS_OF_WEEK = [
   { label: "Monday", value: "monday" },
   { label: "Tuesday", value: "tuesday" },
@@ -19,4 +21,30 @@ export const MONTHS_OF_YEAR = [
   { label: "October", value: "october" },
   { label: "November", value: "november" },
   { label: "December", value: "december" },
+];
+
+export const TIMELINE_LEGENDS = [
+  {
+    name: "General",
+    items: [
+      { name: "Sprints", icon: Webhook, className: "text-foreground" },
+      { name: "Dependency", icon: Link, className: "text-foreground" },
+      { name: "Inferred value", icon: CornerUpRight, className: "text-foreground" },
+    ],
+  },
+  {
+    name: "Work item bars",
+    items: [
+      { name: "No end date", icon: null, className: "bg-linear-to-r from-black to-white" },
+      { name: "No start date", icon: null, className: "bg-linear-to-r from-white to-black" },
+    ],
+  },
+  {
+    name: "Releases",
+    items: [
+      { name: "Released", icon: CircleCheck, className: "text-green-500" },
+      { name: "Unreleased", icon: Ban, className: "text-blue-500" },
+      { name: "Overdue", icon: CircleAlert, className: "text-red-500" },
+    ],
+  },
 ];

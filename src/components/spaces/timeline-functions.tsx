@@ -3,8 +3,8 @@ import { format } from "date-fns";
 import { useMemo } from "react";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { ISSUE_TYPE_GROUPS, type Member, type QueryReturn } from "@/types";
 import { ManageStatusesDialog } from "./manage-statuses-dialog";
-import { ISSUE_TYPE_GROUPS, type Issue, type Member, type QueryReturn } from "@/types";
 import { MONTHS_OF_YEAR } from "@/constants/calendar";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -28,7 +28,6 @@ type TypeGroup = { label: string; items: TypeItem[] };
 interface Props {
   currentDate: Date;
   filters: string[];
-  issues: QueryReturn<Issue[]>;
   members: QueryReturn<Member[]>;
   onDateChange: (dir: "next" | "prev" | "today") => void;
   onFilterChange: (filters: string[]) => void;

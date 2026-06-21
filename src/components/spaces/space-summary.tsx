@@ -158,7 +158,7 @@ export function SpaceSummary({ slug, spaceKey }: { slug: string; spaceKey: strin
   } satisfies ChartConfig;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={CheckCircle2}

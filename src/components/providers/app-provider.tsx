@@ -3,12 +3,16 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { QueryProvider } from "./query-provider";
+import { useOrg } from "@/hooks/use-orgs";
+import { Organization } from "@/types";
+import { useUserStore } from "@/store";
 
 interface AppContextProps {
   isCollapsed: boolean;
   isNotificationEnabled: boolean;
   onCollapsedChange: () => void;
   onNotificationEnabledChange: () => void;
+  organization: Organization | undefined;
 }
 
 const defaultContextProps: AppContextProps = {
@@ -16,6 +20,7 @@ const defaultContextProps: AppContextProps = {
   isNotificationEnabled: false,
   onCollapsedChange: () => {},
   onNotificationEnabledChange: () => {},
+  organization: undefined,
 };
 
 const AppContext = createContext<AppContextProps>({ ...defaultContextProps });
@@ -23,6 +28,9 @@ const AppContext = createContext<AppContextProps>({ ...defaultContextProps });
 export const AppProvider = ({ children }: React.PropsWithChildren & {}) => {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user } = useUserStore();
+
+  const { data: organization } = useOrg(user?.default_org_slug || "");
 
   const onCollapsedChange = () => {
     setIsCollapsed((prev) => !prev);
@@ -60,6 +68,7 @@ export const AppProvider = ({ children }: React.PropsWithChildren & {}) => {
           isNotificationEnabled,
           onCollapsedChange,
           onNotificationEnabledChange,
+          organization,
         }}
       >
         {children}

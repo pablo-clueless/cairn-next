@@ -3,9 +3,10 @@
 import { Loader2Icon, Settings2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import z from "zod";
 
-import { useCreateStatus, useDeleteStatus, useStatuses } from "@/hooks/use-statuses";
 import { STATUS_CATEGORIES, STATUS_CATEGORY_LABELS, type StatusCategory } from "@/types";
+import { useCreateStatus, useDeleteStatus, useStatuses } from "@/hooks/use-statuses";
 import { getApiErrorMessage } from "@/lib/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,33 +26,50 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/** Manage a space's workflow statuses: list, add, and remove. */
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  category: z.enum(STATUS_CATEGORIES),
+  color: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+const defautlValues: FormValues = {
+  name: "",
+  category: "todo",
+  color: "",
+};
+
 export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKey: string }) {
-  const [open, setOpen] = useState(false);
-  const statuses = useStatuses(slug, spaceKey);
   const createStatus = useCreateStatus(slug, spaceKey);
   const deleteStatus = useDeleteStatus(slug, spaceKey);
+  const statuses = useStatuses(slug, spaceKey);
+  const [open, setOpen] = useState(false);
 
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<StatusCategory>("todo");
-  const [color, setColor] = useState("#6B7280");
+  const [values, setValues] = useState(defautlValues);
+
+  const handleChange = <K extends keyof FormValues>(
+    key: keyof FormValues,
+    value: FormValues[K],
+  ) => {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  };
 
   const onAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    createStatus.mutate(
-      { name: trimmed, category, color },
-      {
-        onSuccess: (status) => {
-          toast.success(`Added "${status.name}"`);
-          setName("");
-          setCategory("todo");
-          setColor("#6B7280");
-        },
-        onError: (error) => toast.error(getApiErrorMessage(error)),
+    const parsed = schema.safeParse(values);
+    if (!parsed.success) {
+      toast.error(parsed.error.message);
+      return;
+    }
+    createStatus.mutate(values, {
+      onSuccess: (status) => {
+        toast.success(`Added "${status.name}"`);
+        setValues(defautlValues);
+        setOpen(false);
       },
-    );
+      onError: (error) => toast.error(getApiErrorMessage(error)),
+    });
   };
 
   const onDelete = (id: string, label: string) =>
@@ -60,8 +78,10 @@ export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKe
       onError: (error) => toast.error(getApiErrorMessage(error)),
     });
 
+  const isLoading = createStatus.isPending || deleteStatus.isPending;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(open) => !isLoading && setOpen(open)}>
       <DialogTrigger asChild>
         <Button size="icon" variant="outline" title="Manage statuses">
           <Settings2 className="size-4" />
@@ -111,23 +131,25 @@ export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKe
             <p className="text-muted-foreground py-4 text-center text-sm">No statuses yet.</p>
           )}
         </div>
-
         <form className="flex items-center gap-2 border-t pt-4" onSubmit={onAdd}>
           <input
             type="color"
             aria-label="Status color"
             title="Status color"
             className="size-9 shrink-0 cursor-pointer rounded-xs border bg-transparent p-0.5"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
+            value={values.color}
+            onChange={(e) => handleChange("color", e.target.value)}
           />
           <Input
             className="flex-1"
             placeholder="New status name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={values.name}
+            onChange={(e) => handleChange("name", e.target.value)}
           />
-          <Select value={category} onValueChange={(v) => setCategory(v as StatusCategory)}>
+          <Select
+            value={values.category}
+            onValueChange={(v) => handleChange("category", v as StatusCategory)}
+          >
             <SelectTrigger className="w-36">
               <SelectValue />
             </SelectTrigger>
@@ -139,7 +161,7 @@ export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKe
               ))}
             </SelectContent>
           </Select>
-          <Button type="submit" disabled={createStatus.isPending || !name.trim()}>
+          <Button type="submit" disabled={createStatus.isPending || !values.name.trim()}>
             {createStatus.isPending ? "Adding…" : "Add"}
           </Button>
         </form>

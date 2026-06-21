@@ -1,19 +1,52 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Loader2Icon, PlusIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, GripVertical, Loader2Icon } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  closestCorners,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-import { useCreateSprint, useSprints, useUpdateSprint } from "@/hooks/use-sprints";
+import { useSprints, useUpdateSprint } from "@/hooks/use-sprints";
 import { IssueFunctions } from "./issue-functions";
 import { type Issue, type Sprint } from "@/types";
 import { getApiErrorMessage } from "@/lib/client";
 import { Button } from "@/components/ui/button";
-import { useIssues } from "@/hooks/use-issues";
+import { useIssues, useUpdateIssue } from "@/hooks/use-issues";
 import { useMembers } from "@/hooks/use-orgs";
+import { CreateSprintDialog } from "./create-sprint-dialog";
+import { EditSprintDialog } from "./edit-sprint-dialog";
 import { BacklogRow } from "./backlog-row";
+import { cn } from "@/lib/utils";
+
+// Drop targets are keyed by group: a sprint id, or BACKLOG for the backlog.
+const BACKLOG = "backlog";
+const groupOf = (i: Issue) => i.sprint_id ?? BACKLOG;
+
+// Draggable issue ids are namespaced so they can't collide with a group's
+// droppable id (a sprint id) in the shared DndContext id space.
+const ISSUE_PREFIX = "issue:";
+const toIssueDragId = (id: string) => `${ISSUE_PREFIX}${id}`;
+const fromIssueDragId = (dragId: string) =>
+  dragId.startsWith(ISSUE_PREFIX) ? dragId.slice(ISSUE_PREFIX.length) : dragId;
 
 function dateRange(s: Sprint): string {
   if (s.start_date && s.end_date) {
@@ -22,12 +55,42 @@ function dateRange(s: Sprint): string {
   return "no dates set";
 }
 
+/** An issue row with a dedicated drag handle (so the row's links/selects stay clickable). */
+function SortableIssueRow({ issue, slug }: { issue: Issue; slug: string }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: toIssueDragId(issue.id),
+  });
+  const style: React.CSSProperties = { transform: CSS.Transform.toString(transform), transition };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn("flex items-stretch", isDragging && "opacity-50")}
+    >
+      <button
+        type="button"
+        aria-label="Drag issue"
+        className="text-muted-foreground hover:bg-muted/40 flex cursor-grab items-center border-t px-1 active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <BacklogRow issue={issue} slug={slug} />
+      </div>
+    </div>
+  );
+}
+
 interface SectionProps {
   title: React.ReactNode;
   subtitle?: string;
   count: number;
   issues: Issue[];
   slug: string;
+  droppableId: string;
   action?: React.ReactNode;
   defaultOpen?: boolean;
   emptyHint?: string;
@@ -39,12 +102,14 @@ function Section({
   count,
   issues,
   slug,
+  droppableId,
   action,
   defaultOpen = true,
   emptyHint,
 }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   const Chevron = open ? ChevronDown : ChevronRight;
+  const { setNodeRef, isOver } = useDroppable({ id: droppableId });
 
   return (
     <motion.section className="overflow-hidden rounded-xs border">
@@ -62,18 +127,22 @@ function Section({
         </div>
         {action}
       </div>
-      {open &&
-        (issues.length > 0 ? (
-          <div>
-            {issues.map((i) => (
-              <BacklogRow key={i.id} issue={i} slug={slug} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-muted-foreground border-t border-dashed px-3 py-6 text-center text-sm">
-            {emptyHint ?? "No work items."}
-          </div>
-        ))}
+      {open && (
+        <div ref={setNodeRef} className={cn(isOver && "bg-primary-50/50")}>
+          <SortableContext
+            items={issues.map((i) => toIssueDragId(i.id))}
+            strategy={verticalListSortingStrategy}
+          >
+            {issues.length > 0 ? (
+              issues.map((i) => <SortableIssueRow key={i.id} issue={i} slug={slug} />)
+            ) : (
+              <div className="text-muted-foreground border-t border-dashed px-3 py-6 text-center text-sm">
+                {emptyHint ?? "No work items."}
+              </div>
+            )}
+          </SortableContext>
+        </div>
+      )}
     </motion.section>
   );
 }
@@ -81,18 +150,16 @@ function Section({
 export function IssueBacklog({ slug, spaceKey }: { slug: string; spaceKey: string }) {
   const sprints = useSprints(slug, spaceKey);
   const issues = useIssues(slug, { space: spaceKey });
-  const createSprint = useCreateSprint(slug, spaceKey);
   const updateSprint = useUpdateSprint(slug, spaceKey);
+  const updateIssue = useUpdateIssue(slug);
   const [query] = useState("");
+  const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
   const members = useMembers(slug);
 
-  if (sprints.isLoading || issues.isLoading) {
-    return (
-      <div className="grid place-items-center py-16">
-        <Loader2Icon className="text-muted-foreground size-6 animate-spin" />
-      </div>
-    );
-  }
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const q = query.trim().toLowerCase();
   const matches = (i: Issue) =>
@@ -101,14 +168,13 @@ export function IssueBacklog({ slug, spaceKey }: { slug: string; spaceKey: strin
   const openSprints = (sprints.data ?? []).filter((s) => s.status !== "completed");
   const backlog = all.filter((i) => !i.sprint_id);
 
-  const onCreateSprint = () =>
-    createSprint.mutate(
-      { name: `${spaceKey} Sprint ${(sprints.data?.length ?? 0) + 1}` },
-      {
-        onSuccess: () => toast.success("Sprint created"),
-        onError: (e) => toast.error(getApiErrorMessage(e)),
-      },
-    );
+  // Valid drop-group ids: the backlog plus every open sprint.
+  const groupIds = useMemo(
+    () => new Set<string>([BACKLOG, ...openSprints.map((s) => s.id)]),
+    [openSprints],
+  );
+
+  const defaultSprintName = `${spaceKey} Sprint ${(sprints.data?.length ?? 0) + 1}`;
 
   const transition = (s: Sprint, status: "active" | "completed", label: string) =>
     updateSprint.mutate(
@@ -119,55 +185,112 @@ export function IssueBacklog({ slug, spaceKey }: { slug: string; spaceKey: strin
       },
     );
 
+  const handleDragStart = (e: DragStartEvent) => {
+    const issue = all.find((i) => i.id === fromIssueDragId(String(e.active.id)));
+    setActiveIssue(issue ?? null);
+  };
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    setActiveIssue(null);
+    const { active, over } = e;
+    if (!over) return;
+
+    const issue = all.find((i) => i.id === fromIssueDragId(String(active.id)));
+    if (!issue) return;
+
+    // The drop target is either a group droppable (its id is the group id) or
+    // another row, in which case we adopt that row's group.
+    const overId = String(over.id);
+    let target: string;
+    if (groupIds.has(overId)) {
+      target = overId;
+    } else {
+      const overIssue = all.find((i) => i.id === fromIssueDragId(overId));
+      if (!overIssue) return;
+      target = groupOf(overIssue);
+    }
+
+    // Only cross-group moves are persisted (intra-sprint ordering isn't stored yet).
+    if (groupOf(issue) === target) return;
+    updateIssue.mutate(
+      { key: issue.key, update: { sprint_id: target === BACKLOG ? "" : target } },
+      { onError: (err) => toast.error(getApiErrorMessage(err)) },
+    );
+  };
+
+  if (sprints.isLoading || issues.isLoading) {
+    return (
+      <div className="grid place-items-center py-16">
+        <Loader2Icon className="text-muted-foreground size-6 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <IssueFunctions
         slug={slug}
         spaceKey={spaceKey}
         filters={[]}
-        issues={issues}
         members={members}
         onCompleteSprint={() => {}}
         onFilterChange={() => {}}
         onSearch={() => {}}
       />
-      {openSprints.map((s) => {
-        const items = all.filter((i) => i.sprint_id === s.id);
-        return (
-          <Section
-            key={s.id}
-            slug={slug}
-            title={s.name}
-            subtitle={dateRange(s)}
-            count={items.length}
-            issues={items}
-            emptyHint="Drag or move issues into this sprint."
-            action={
-              s.status === "planned" ? (
-                <Button variant="outline" onClick={() => transition(s, "active", "Started")}>
-                  Start sprint
-                </Button>
-              ) : (
-                <Button onClick={() => transition(s, "completed", "Completed")}>
-                  Complete sprint
-                </Button>
-              )
-            }
-          />
-        );
-      })}
-      <Section
-        slug={slug}
-        title="Backlog"
-        count={backlog.length}
-        issues={backlog}
-        emptyHint="Your backlog is empty. Create issues from the Board, or add a sprint."
-        action={
-          <Button variant="outline" onClick={onCreateSprint} disabled={createSprint.isPending}>
-            <PlusIcon /> Create sprint
-          </Button>
-        }
-      />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        {openSprints.map((s) => {
+          const items = all.filter((i) => i.sprint_id === s.id);
+          return (
+            <Section
+              key={s.id}
+              slug={slug}
+              droppableId={s.id}
+              title={s.name}
+              subtitle={dateRange(s)}
+              count={items.length}
+              issues={items}
+              emptyHint="Drag issues here to add them to this sprint."
+              action={
+                <div className="flex items-center gap-2">
+                  <EditSprintDialog slug={slug} spaceKey={spaceKey} sprint={s} />
+                  {s.status === "planned" ? (
+                    <Button variant="outline" onClick={() => transition(s, "active", "Started")}>
+                      Start sprint
+                    </Button>
+                  ) : (
+                    <Button onClick={() => transition(s, "completed", "Completed")}>
+                      Complete sprint
+                    </Button>
+                  )}
+                </div>
+              }
+            />
+          );
+        })}
+        <Section
+          slug={slug}
+          droppableId={BACKLOG}
+          title="Backlog"
+          count={backlog.length}
+          issues={backlog}
+          emptyHint="Your backlog is empty. Create issues from the Board, or add a sprint."
+          action={
+            <CreateSprintDialog slug={slug} spaceKey={spaceKey} defaultName={defaultSprintName} />
+          }
+        />
+        <DragOverlay>
+          {activeIssue ? (
+            <div className="bg-background rounded-xs border shadow-xl">
+              <BacklogRow issue={activeIssue} slug={slug} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }

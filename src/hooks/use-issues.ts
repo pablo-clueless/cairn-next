@@ -12,6 +12,7 @@ export interface IssueFilters {
   space?: string;
   assignee?: string; // "me" or a user id
   status?: string;
+  sprint?: string; // a sprint id, or "backlog" for issues with no sprint
 }
 
 function issuesUrl(slug: string, f: IssueFilters = {}) {
@@ -19,6 +20,7 @@ function issuesUrl(slug: string, f: IssueFilters = {}) {
   if (f.space) qs.set("space", f.space);
   if (f.assignee) qs.set("assignee", f.assignee);
   if (f.status) qs.set("status", f.status);
+  if (f.sprint) qs.set("sprint", f.sprint);
   const q = qs.toString();
   return `/v1/orgs/${slug}/issues${q ? `?${q}` : ""}`;
 }
@@ -46,6 +48,15 @@ export const useIssue = (slug: string, issueKey: string) =>
     url: `/v1/orgs/${slug}/issues/${issueKey}`,
     enabled: Boolean(slug && issueKey),
     transform: data<Issue>,
+  });
+
+// Issues belonging to a single sprint. Pass "backlog" to get issues with no
+// sprint. The query stays disabled until a sprint is selected.
+export const useSprintIssues = (slug: string, sprintId: string | null | undefined) =>
+  useApiQuery<Issue[]>({
+    url: issuesUrl(slug, { sprint: sprintId ?? undefined }),
+    enabled: Boolean(slug && sprintId),
+    transform: data<Issue[]>,
   });
 
 export const useCreateIssue = (slug: string, spaceKey: string) => {

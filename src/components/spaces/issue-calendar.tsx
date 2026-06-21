@@ -9,7 +9,6 @@ import {
   format,
   isSameMonth,
   isToday,
-  parseISO,
   startOfDay,
   startOfMonth,
   startOfWeek,
@@ -18,7 +17,6 @@ import {
 import { TimelineFunctions } from "./timeline-functions";
 import { DAYS_OF_WEEK } from "@/constants/calendar";
 import { useSprints } from "@/hooks/use-sprints";
-import { useIssues } from "@/hooks/use-issues";
 import { useMembers } from "@/hooks/use-orgs";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +77,6 @@ export const IssueCalendar = ({ slug, spaceKey }: { slug: string; spaceKey: stri
   const [currentDate, setCurrentDate] = useState(new Date());
   const sprints = useSprints(slug, spaceKey);
   const members = useMembers(slug);
-  const issues = useIssues(slug);
 
   const handleDateChange = (dir: "next" | "prev" | "today") => {
     setCurrentDate((prev) => {
@@ -111,27 +108,13 @@ export const IssueCalendar = ({ slug, spaceKey }: { slug: string; spaceKey: stri
     const result: CalendarSpan[] = [];
     for (const sprint of sprints.data ?? []) {
       if (!sprint.start_date || !sprint.end_date) continue;
-      const start = startOfDay(parseISO(sprint.start_date));
-      const end = startOfDay(parseISO(sprint.end_date));
+      const start = startOfDay(new Date(sprint.start_date));
+      const end = startOfDay(new Date(sprint.end_date));
       if (end < start) continue;
       result.push({ id: sprint.id, title: sprint.name, kind: "sprint", start, end });
     }
-
-    for (const issue of issues.data ?? []) {
-      if (!issue.due_date) continue;
-      const end = startOfDay(new Date(issue.due_date));
-      const created = startOfDay(new Date(issue.created_at));
-      result.push({
-        id: issue.id,
-        title: issue.title,
-        kind: "issue",
-        start: created < end ? created : end,
-        end,
-      });
-    }
-
     return result;
-  }, [sprints.data, issues.data]);
+  }, [sprints.data]);
 
   return (
     <div className="flex items-start gap-4 space-y-6">
@@ -139,7 +122,6 @@ export const IssueCalendar = ({ slug, spaceKey }: { slug: string; spaceKey: stri
         <TimelineFunctions
           currentDate={currentDate}
           filters={[]}
-          issues={issues}
           members={members}
           onDateChange={handleDateChange}
           onFilterChange={() => {}}

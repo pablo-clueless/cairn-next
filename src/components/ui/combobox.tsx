@@ -24,7 +24,7 @@ function ComboboxTrigger({ className, children, ...props }: ComboboxPrimitive.Tr
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
       className={cn(
-        "focus-visible:border-primary-400 data-placeholder:text-muted-foreground data-[open]:border-primary-500 data-[open]:text-primary-600 dark:bg-input/30 dark:hover:bg-input/50 flex h-8 w-fit items-center justify-between gap-1.5 rounded-xs border bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-red-500 *:data-[slot=combobox-value]:line-clamp-1 *:data-[slot=combobox-value]:flex *:data-[slot=combobox-value]:items-center *:data-[slot=combobox-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "focus-visible:border-primary-400 data-placeholder:text-muted-foreground data-open:border-primary-500 data-open:text-primary-600 dark:bg-input/30 dark:hover:bg-input/50 flex h-8 w-fit items-center justify-between gap-1.5 rounded-xs border bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-red-500 *:data-[slot=combobox-value]:line-clamp-1 *:data-[slot=combobox-value]:flex *:data-[slot=combobox-value]:items-center *:data-[slot=combobox-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -171,7 +171,7 @@ function ComboboxCheckboxItem({ className, children, ...props }: ComboboxPrimiti
       )}
       {...props}
     >
-      <span className="border-input group-data-[selected]/combobox-item:border-primary-500 group-data-[selected]/combobox-item:bg-primary-500 flex size-4 shrink-0 items-center justify-center rounded-[4px] border bg-transparent text-white transition-colors">
+      <span className="border-input group-data-selected/combobox-item:border-primary-500 group-data-selected/combobox-item:bg-primary-500 flex size-4 shrink-0 items-center justify-center rounded-lg border bg-transparent text-white transition-colors">
         <ComboboxPrimitive.ItemIndicator>
           <CheckIcon className="size-3" />
         </ComboboxPrimitive.ItemIndicator>

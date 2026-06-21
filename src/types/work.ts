@@ -55,11 +55,12 @@ export const STATUS_LABELS: Record<IssueStatus, string> = {
 };
 
 /** Status category — drives board grouping/coloring and "done" semantics. */
-export type StatusCategory = "todo" | "in_progress" | "done";
-export const STATUS_CATEGORIES: StatusCategory[] = ["todo", "in_progress", "done"];
+export type StatusCategory = "todo" | "in_progress" | "in_review" | "done";
+export const STATUS_CATEGORIES: StatusCategory[] = ["todo", "in_progress", "in_review", "done"];
 export const STATUS_CATEGORY_LABELS: Record<StatusCategory, string> = {
   todo: "To Do",
   in_progress: "In Progress",
+  in_review: "In Review",
   done: "Done",
 };
 
@@ -142,11 +143,11 @@ export interface Sprint {
   organization_id: string;
   space_id: string;
   name: string;
-  goal?: string | null;
+  goal: string | null;
   status: SprintStatus;
-  start_date?: string | null;
-  end_date?: string | null;
-  completed_at?: string | null;
+  start_date: string | null; // ISO string from the API, or null
+  end_date: string | null; // ISO string from the API, or null
+  completed_at: string | null;
   issue_count: number;
   created_at: string;
   updated_at: string;
@@ -190,6 +191,7 @@ export interface IssueUpdate {
   status_id?: string; // the workflow status to move the issue to
   priority?: IssuePriority;
   assignee_id?: string; // "" unassigns
+  sprint_id?: string; // "" moves the issue to the backlog
   due_date?: string; // "" clears the due date
   /** @deprecated backend ignores this; use status_id. Kept until all callers migrate. */
   status?: IssueStatus;

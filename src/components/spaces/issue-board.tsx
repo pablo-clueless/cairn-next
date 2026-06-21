@@ -13,7 +13,6 @@ import { useMembers } from "@/hooks/use-orgs";
 import { IssueCard } from "./issue-card";
 import { type Issue } from "@/types";
 
-/** Kanban board for a space, grouped by status with drag-and-drop. */
 export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string }) {
   const reorderStatuses = useReorderStatuses(slug, spaceKey);
   const issues = useIssues(slug, { space: spaceKey });

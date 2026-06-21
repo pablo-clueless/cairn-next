@@ -1,5 +1,10 @@
-import { Placeholder } from "@/components/shared/placeholder";
+"use client";
+
+import { useParams } from "next/navigation";
+
+import { IssueDocuments } from "@/components/spaces";
 
 export default function Page() {
-  return <Placeholder title="Docs" note="Space documents and notes will live here." />;
+  const { slug, spaceKey } = useParams<{ slug: string; spaceKey: string }>();
+  return <IssueDocuments slug={slug} spaceKey={spaceKey} />;
 }

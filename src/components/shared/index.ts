@@ -1,5 +1,6 @@
 export * from "./bread-crumb";
 export * from "./calendar";
+export * from "./color-picker";
 export * from "./data-table";
 export * from "./date-picker";
 export * from "./header";

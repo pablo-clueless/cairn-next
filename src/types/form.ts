@@ -5,6 +5,7 @@ import type React from "react";
 export type FormFieldType =
   | "amount"
   | "checkbox"
+  | "color"
   | "date"
   | "email"
   | "file"

@@ -75,7 +75,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <h2 className="text-center text-xl font-medium">
               Something went wrong. Our developers are working on fixing this
             </h2>
-            <p className="text-center text-sm text-neutral-600">
+            <p className="text-center text-sm wrap-break-word text-neutral-600">
               {this.state.error?.message || "An unexpected error occurred."}
             </p>
             <div className="mt-2 flex gap-4">

@@ -4,7 +4,7 @@ import type { FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { Controller, useFormState, useWatch } from "react-hook-form";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { DatePicker, MultiSelect, OtpInput, PhoneInput } from "../shared";
+import { ColorPicker, DatePicker, MultiSelect, OtpInput, PhoneInput } from "../shared";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import type { StandardFormField } from "@/types/form";
 import { fieldReactsToValues, getFieldError, resolveDisabled } from "@/lib/form";
@@ -272,6 +272,17 @@ export const StandardFieldInput = <T extends FieldValues>({
                 />
               )
             }
+          />
+        );
+
+      case "color":
+        return (
+          <Controller
+            control={form.control}
+            name={name as Path<T>}
+            render={({ field: f }) => (
+              <ColorPicker onChange={f.onChange} disabled={f.disabled} value={f.value} />
+            )}
           />
         );
 

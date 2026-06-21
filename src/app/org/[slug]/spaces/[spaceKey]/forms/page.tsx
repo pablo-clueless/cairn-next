@@ -1,5 +1,10 @@
-import { Placeholder } from "@/components/shared/placeholder";
+"use client";
+
+import { useParams } from "next/navigation";
+
+import { IssueForms } from "@/components/spaces";
 
 export default function Page() {
-  return <Placeholder title="Forms" note="Intake forms for this space will live here." />;
+  const { slug, spaceKey } = useParams<{ slug: string; spaceKey: string }>();
+  return <IssueForms slug={slug} spaceKey={spaceKey} />;
 }
