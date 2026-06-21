@@ -169,7 +169,10 @@ function KanbanColumn<T extends KanbanItemBase>({
       style={style}
       data-slot="kanban-column"
       data-status={config.id}
-      className={cn("flex w-72 shrink-0 flex-col gap-y-2", isDragging && "z-50 opacity-50")}
+      className={cn(
+        "bg-muted flex min-h-150 w-72 shrink-0 flex-col gap-y-2",
+        isDragging && "z-50 opacity-50",
+      )}
     >
       <div
         data-slot="kanban-column-header"

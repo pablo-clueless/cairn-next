@@ -1,9 +1,9 @@
-import { File, FileText, Folder } from "lucide-react";
+import { File, FileText, Folder, Presentation } from "lucide-react";
 
 export const DOCUMENT_TYPES = [
   { label: "All", value: "all", icon: File },
   { label: "Page and Live doc", value: "page", icon: FileText },
-  { label: "Whiteboard", value: "whiteboard", icon: Folder },
+  { label: "Whiteboard", value: "whiteboard", icon: Presentation },
   { label: "Folder", value: "folder", icon: Folder },
 ];
 

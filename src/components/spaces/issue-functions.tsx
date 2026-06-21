@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ManageStatusesDialog } from "./manage-statuses-dialog";
+import { ManageTransitionsDialog } from "./manage-transitions-dialog";
 import type { Member, QueryReturn } from "@/types";
 import { getInitials } from "@/lib/string";
 import { Button } from "../ui/button";
@@ -103,6 +104,7 @@ export const IssueFunctions = ({
           </Button>
         )}
         <ManageStatusesDialog slug={slug} spaceKey={spaceKey} />
+        <ManageTransitionsDialog slug={slug} spaceKey={spaceKey} />
         <Popover>
           <PopoverTrigger asChild>
             <Button size="icon" variant="outline">

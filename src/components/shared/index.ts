@@ -9,6 +9,7 @@ export * from "./multi-select";
 export * from "./otp-input";
 export * from "./pagination";
 export * from "./phone-input";
+export * from "./rich-text-editor";
 export * from "./scroll-area";
 export * from "./sidebar";
 export * from "./statistics";

@@ -26,12 +26,12 @@ export interface Subscription {
   price_per_seat_cents: number;
   currency: string;
   trial_days: number;
-  trial_ends_at?: string | null;
+  trial_ends_at?: Date | null;
   current_period_start?: string | null;
   current_period_end?: string | null;
-  canceled_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  canceled_at?: Date | null;
+  created_at: Date;
+  updated_at: Date;
   // Derived
   seats: number;
   amount_due_cents: number;
@@ -41,7 +41,7 @@ export interface Subscription {
 
 export interface AppSettings {
   default_trial_days: number;
-  updated_at: string;
+  updated_at: Date;
 }
 
 /** Org + subscription pair returned by the platform-admin orgs list. */

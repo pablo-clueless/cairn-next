@@ -73,8 +73,8 @@ export interface WorkflowStatus {
   category: StatusCategory;
   color: string;
   position: number;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface CreateStatusInput {
@@ -99,6 +99,26 @@ export interface StatusPatch {
   position?: number;
 }
 
+/**
+ * An allowed issue status transition within a space's workflow.
+ * `from_status_id === null` means "from any status". A space with no transitions
+ * has an open workflow (any status may change to any other).
+ */
+export interface StatusTransition {
+  id: string;
+  organization_id: string;
+  space_id: string;
+  from_status_id: string | null;
+  to_status_id: string;
+  created_at: string;
+}
+
+/** One edge sent when replacing a space's workflow. `from_status_id` null = any. */
+export interface TransitionInput {
+  from_status_id: string | null;
+  to_status_id: string;
+}
+
 export interface Space {
   id: string;
   organization_id: string;
@@ -108,8 +128,8 @@ export interface Space {
   lead_id?: string | null;
   created_by?: string | null;
   issue_count: number;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Issue {
@@ -156,16 +176,16 @@ export interface Sprint {
 export interface CreateSprintInput {
   name: string;
   goal?: string;
-  start_date?: string;
-  end_date?: string;
+  start_date?: string; // ISO string
+  end_date?: string; // ISO string
 }
 
 export interface SprintUpdate {
   name?: string;
   goal?: string;
   status?: SprintStatus;
-  start_date?: string;
-  end_date?: string;
+  start_date?: string; // ISO string
+  end_date?: string; // ISO string
 }
 
 export interface CreateSpaceInput {

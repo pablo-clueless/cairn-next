@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Kanban, type KanbanColumnConfig } from "@/components/shared/kanban";
 import { useStatuses, useReorderStatuses } from "@/hooks/use-statuses";
+import { useTransitions, isTransitionAllowed } from "@/hooks/use-transitions";
 import { useIssues, useUpdateIssue } from "@/hooks/use-issues";
 import { IssueFunctions } from "./issue-functions";
 import { getApiErrorMessage } from "@/lib/client";
@@ -17,6 +18,7 @@ export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string 
   const reorderStatuses = useReorderStatuses(slug, spaceKey);
   const issues = useIssues(slug, { space: spaceKey });
   const statuses = useStatuses(slug, spaceKey);
+  const transitions = useTransitions(slug, spaceKey);
   const updateIssue = useUpdateIssue(slug);
   const members = useMembers(slug);
 
@@ -72,6 +74,13 @@ export function IssueBoard({ slug, spaceKey }: { slug: string; spaceKey: string 
         onDragEnd={({ item, toStatus }) => {
           // toStatus is the destination column id, i.e. the target status_id.
           if (item.status_id === toStatus) return;
+          // Pre-check the workflow so an invalid drop fails instantly instead of
+          // round-tripping to a 409 (the server enforces this too).
+          if (!isTransitionAllowed(transitions.data, item.status_id, toStatus)) {
+            const target = statuses.data?.find((s) => s.id === toStatus);
+            toast.error(`Can't move "${item.title}" to ${target?.name ?? "that status"}`);
+            return;
+          }
           updateIssue.mutate(
             { key: item.key, update: { status_id: toStatus } },
             { onError: (error) => toast.error(getApiErrorMessage(error)) },

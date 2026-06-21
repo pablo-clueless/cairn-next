@@ -1,5 +1,6 @@
 export * from "./app";
 export * from "./billing";
+export * from "./document";
 export * from "./form";
 export * from "./org";
 export * from "./query";
