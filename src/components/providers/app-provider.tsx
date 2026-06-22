@@ -41,17 +41,15 @@ export const AppProvider = ({ children }: React.PropsWithChildren & {}) => {
   };
 
   const requestPermission = useCallback(async () => {
-    if (!("Noitification" in window)) {
+    if (!("Notification" in window)) {
       console.warn("Notifications not supported");
       return;
     }
     if (Notification.permission === "granted") {
-      console.log("Notification permission granted");
       return;
     }
     if (Notification.permission !== "denied") {
-      const permission = await Notification.requestPermission();
-      console.log({ permission });
+      await Notification.requestPermission();
       // setIsNotificationEnabled(true)
     }
   }, []);

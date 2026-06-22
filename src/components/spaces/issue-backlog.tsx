@@ -35,6 +35,7 @@ import { useMembers } from "@/hooks/use-orgs";
 import { CreateSprintDialog } from "./create-sprint-dialog";
 import { EditSprintDialog } from "./edit-sprint-dialog";
 import { BacklogRow } from "./backlog-row";
+import { rankBetween } from "@/lib/rank";
 import { cn } from "@/lib/utils";
 
 // Drop targets are keyed by group: a sprint id, or BACKLOG for the backlog.
@@ -164,7 +165,7 @@ export function IssueBacklog({ slug, spaceKey }: { slug: string; spaceKey: strin
   const q = query.trim().toLowerCase();
   const matches = (i: Issue) =>
     !q || i.title.toLowerCase().includes(q) || i.key.toLowerCase().includes(q);
-  const all = (issues.data ?? []).filter(matches);
+  const all = (issues.data ?? []).filter(matches).sort((a, b) => a.rank - b.rank);
   const openSprints = (sprints.data ?? []).filter((s) => s.status !== "completed");
   const backlog = all.filter((i) => !i.sprint_id);
 
@@ -199,21 +200,34 @@ export function IssueBacklog({ slug, spaceKey }: { slug: string; spaceKey: strin
     if (!issue) return;
 
     // The drop target is either a group droppable (its id is the group id) or
-    // another row, in which case we adopt that row's group.
+    // another row, in which case we adopt that row's group and insert at its spot.
     const overId = String(over.id);
     let target: string;
+    let overIssueId: string | null = null;
     if (groupIds.has(overId)) {
       target = overId;
     } else {
       const overIssue = all.find((i) => i.id === fromIssueDragId(overId));
       if (!overIssue) return;
       target = groupOf(overIssue);
+      overIssueId = overIssue.id;
     }
 
-    // Only cross-group moves are persisted (intra-sprint ordering isn't stored yet).
-    if (groupOf(issue) === target) return;
+    // Rank the issue among its new neighbours (dropping on a row inserts above it;
+    // dropping on the section appends to the end).
+    const groupItems = all.filter((i) => groupOf(i) === target && i.id !== issue.id);
+    const at = overIssueId
+      ? Math.max(0, groupItems.findIndex((i) => i.id === overIssueId))
+      : groupItems.length;
+    const rank = rankBetween(groupItems[at - 1]?.rank, groupItems[at]?.rank);
+
+    const groupChanged = groupOf(issue) !== target;
+    if (!groupChanged && issue.rank === rank) return;
     updateIssue.mutate(
-      { key: issue.key, update: { sprint_id: target === BACKLOG ? "" : target } },
+      {
+        key: issue.key,
+        update: { rank, ...(groupChanged ? { sprint_id: target === BACKLOG ? "" : target } : {}) },
+      },
       { onError: (err) => toast.error(getApiErrorMessage(err)) },
     );
   };

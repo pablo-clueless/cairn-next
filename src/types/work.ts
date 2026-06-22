@@ -73,6 +73,7 @@ export interface WorkflowStatus {
   category: StatusCategory;
   color: string;
   position: number;
+  wip_limit: number; // 0 = no limit
   created_at: Date;
   updated_at: Date;
 }
@@ -88,6 +89,7 @@ export interface StatusUpdate {
   category?: StatusCategory;
   color?: string;
   position?: number;
+  wip_limit?: number; // 0 = no limit
 }
 
 /** A single status's partial change in a bulk update (matched by id). */
@@ -97,6 +99,7 @@ export interface StatusPatch {
   category?: StatusCategory;
   color?: string;
   position?: number;
+  wip_limit?: number;
 }
 
 /**
@@ -117,6 +120,16 @@ export interface StatusTransition {
 export interface TransitionInput {
   from_status_id: string | null;
   to_status_id: string;
+}
+
+/** A configured allowed status transition within a space's workflow. */
+export interface StatusTransition {
+  id: string;
+  organization_id: string;
+  space_id: string;
+  from_status_id: string | null; // null = from any status
+  to_status_id: string;
+  created_at: string;
 }
 
 export interface Space {
@@ -152,6 +165,7 @@ export interface Issue {
   reporter_name?: string | null;
   sprint_id?: string | null;
   due_date?: string | null; // YYYY-MM-DD (date-only); may include a time component from the API
+  rank: number; // fractional sort key within the space
   created_at: string;
   updated_at: string;
 }
@@ -213,6 +227,7 @@ export interface IssueUpdate {
   assignee_id?: string; // "" unassigns
   sprint_id?: string; // "" moves the issue to the backlog
   due_date?: string; // "" clears the due date
+  rank?: number; // fractional sort key for stable drag-and-drop ordering
   /** @deprecated backend ignores this; use status_id. Kept until all callers migrate. */
   status?: IssueStatus;
 }

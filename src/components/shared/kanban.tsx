@@ -64,6 +64,8 @@ export interface KanbanColumnConfig {
   title: string;
   position: number;
   color?: StatusVariant | (string & {});
+  /** Work-in-progress limit; 0/undefined means no limit. The column flags when exceeded. */
+  wipLimit?: number;
 }
 
 /** Payload emitted when a card is dropped into a new position. */
@@ -87,6 +89,8 @@ interface KanbanProps<T extends KanbanItemBase> {
   onColumnDelete?: (columnId: string) => void;
   columnEmptyState?: ReactNode;
   className?: string;
+  /** Shorter columns — used for swimlane bands so stacked lanes stay readable. */
+  compact?: boolean;
 }
 
 interface KanbanColumnProps<T extends KanbanItemBase> {
@@ -97,6 +101,7 @@ interface KanbanColumnProps<T extends KanbanItemBase> {
   onDelete?: () => void;
   columnEmptyState?: ReactNode;
   sortableId: string;
+  compact?: boolean;
 }
 
 interface KanbanCardProps {
@@ -142,6 +147,7 @@ function KanbanColumn<T extends KanbanItemBase>({
   onDelete,
   columnEmptyState,
   sortableId,
+  compact,
 }: KanbanColumnProps<T>) {
   const {
     attributes,
@@ -170,7 +176,8 @@ function KanbanColumn<T extends KanbanItemBase>({
       data-slot="kanban-column"
       data-status={config.id}
       className={cn(
-        "bg-muted flex min-h-150 w-72 shrink-0 flex-col gap-y-2",
+        "bg-muted flex w-72 shrink-0 flex-col gap-y-2",
+        compact ? "min-h-32" : "min-h-150",
         isDragging && "z-50 opacity-50",
       )}
     >
@@ -195,14 +202,23 @@ function KanbanColumn<T extends KanbanItemBase>({
           <span className="text-sm font-semibold">{config.title}</span>
         </div>
         <div className="flex items-center gap-x-1">
-          <span
-            className={cn(
-              "grid size-5 place-items-center rounded-full text-xs font-medium",
-              "bg-neutral-200 dark:bg-neutral-700",
-            )}
-          >
-            {items.length}
-          </span>
+          {(() => {
+            const limit = config.wipLimit ?? 0;
+            const over = limit > 0 && items.length > limit;
+            return (
+              <span
+                title={limit > 0 ? `WIP limit: ${limit}` : undefined}
+                className={cn(
+                  "grid min-w-5 place-items-center rounded-full px-1 text-xs font-medium",
+                  over
+                    ? "bg-red-500 text-white"
+                    : "bg-neutral-200 dark:bg-neutral-700",
+                )}
+              >
+                {limit > 0 ? `${items.length}/${limit}` : items.length}
+              </span>
+            );
+          })()}
           {hasActions && (
             <Popover>
               <PopoverTrigger asChild>
@@ -305,6 +321,7 @@ export function Kanban<T extends KanbanItemBase>({
   onColumnDelete,
   columnEmptyState,
   className,
+  compact,
 }: KanbanProps<T>) {
   // Which item field maps to a column id. Falls back to "status".
   const groupKey = (groupBy ?? "status") as keyof T;
@@ -438,6 +455,7 @@ export function Kanban<T extends KanbanItemBase>({
                 onEdit={onColumnEdit ? () => onColumnEdit(column.id) : undefined}
                 onDelete={onColumnDelete ? () => onColumnDelete(column.id) : undefined}
                 columnEmptyState={columnEmptyState}
+                compact={compact}
               />
             ))}
           </SortableContext>
