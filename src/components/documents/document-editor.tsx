@@ -1,7 +1,7 @@
 "use client";
 
-import { Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { CheckIcon, CloudIcon, Loader2Icon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { useDocument, useUpdateDocument } from "@/hooks/use-documents";
@@ -13,9 +13,39 @@ import type { IDocument } from "@/types";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
+/** How long after the last keystroke before an autosave fires. */
+const AUTOSAVE_DELAY_MS = 1000;
+
+type SaveState = "saved" | "unsaved" | "saving";
+
+const SaveStatus = ({ state }: { state: SaveState }) => {
+  if (state === "saving") {
+    return (
+      <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <Loader2Icon className="size-3 animate-spin" /> Saving…
+      </span>
+    );
+  }
+  if (state === "unsaved") {
+    return (
+      <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <CloudIcon className="size-3" /> Unsaved changes
+      </span>
+    );
+  }
+  return (
+    <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+      <CheckIcon className="size-3" /> Saved
+    </span>
+  );
+};
+
 /**
  * Inner editor for a loaded document. Mounted with `key={doc.id}` so its local
  * state initializes straight from props (no effect-driven sync needed).
+ *
+ * Live docs autosave: edits to title/content are debounced and PATCHed without
+ * leaving the editor. Publish (drafts) and Close remain explicit.
  */
 const EditorBody = ({
   slug,
@@ -31,18 +61,81 @@ const EditorBody = ({
   const updateDocument = useUpdateDocument(slug, spaceKey);
   const [title, setTitle] = useState(doc.title);
   const [content, setContent] = useState(doc.content);
+  const [saveState, setSaveState] = useState<SaveState>("saved");
 
-  const save = (status?: "published") =>
-    updateDocument.mutate(
-      { id: doc.id, update: { title: title.trim(), content, ...(status ? { status } : {}) } },
-      {
-        onSuccess: () => {
-          toast.success(status === "published" ? "Published" : "Saved");
-          onClose();
-        },
-        onError: (e) => toast.error(getApiErrorMessage(e)),
-      },
-    );
+  // `mutate` is stable across renders; ref keeps our callbacks dependency-free
+  // so the autosave effect isn't re-armed every time mutation state flips.
+  const mutateRef = useRef(updateDocument.mutate);
+  mutateRef.current = updateDocument.mutate;
+
+  // Last values successfully persisted, seeded from the loaded doc.
+  const savedRef = useRef({ title: doc.title.trim(), content: doc.content });
+  // Latest edited values, reachable from timers / unmount without re-arming.
+  const latest = useRef({ title, content });
+  latest.current = { title, content };
+
+  const isDirty = useCallback(() => {
+    const t = latest.current.title.trim();
+    return t !== savedRef.current.title || latest.current.content !== savedRef.current.content;
+  }, []);
+
+  /** PATCH the current snapshot. `status` is only sent on explicit publish. */
+  const persist = useCallback(
+    (status?: "published") =>
+      new Promise<boolean>((resolve) => {
+        const snapshot = { title: latest.current.title.trim(), content: latest.current.content };
+        setSaveState("saving");
+        mutateRef.current(
+          { id: doc.id, update: { ...snapshot, ...(status ? { status } : {}) } },
+          {
+            onSuccess: () => {
+              savedRef.current = snapshot;
+              setSaveState(isDirty() ? "unsaved" : "saved");
+              resolve(true);
+            },
+            onError: (e) => {
+              setSaveState("unsaved");
+              toast.error(getApiErrorMessage(e));
+              resolve(false);
+            },
+          },
+        );
+      }),
+    [doc.id, isDirty],
+  );
+
+  // Debounced autosave: re-arms on each edit, fires once typing settles.
+  useEffect(() => {
+    if (!isDirty()) return;
+    setSaveState("unsaved");
+    const timer = setTimeout(() => void persist(), AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [title, content, isDirty, persist]);
+
+  // Best-effort flush of any pending edit when the editor unmounts.
+  useEffect(
+    () => () => {
+      if (isDirty()) {
+        mutateRef.current({
+          id: doc.id,
+          update: { title: latest.current.title.trim(), content: latest.current.content },
+        });
+      }
+    },
+    [doc.id, isDirty],
+  );
+
+  const publish = async () => {
+    if (await persist("published")) {
+      toast.success("Published");
+      onClose();
+    }
+  };
+
+  const closeEditor = async () => {
+    if (isDirty()) await persist();
+    onClose();
+  };
 
   return (
     <>
@@ -57,15 +150,14 @@ const EditorBody = ({
             {doc.type === "live" ? "Live doc" : "Page"}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            onClick={() => save(doc.status === "draft" ? "published" : undefined)}
-            disabled={updateDocument.isPending}
-          >
-            {doc.status === "draft" ? "Publish" : "Save"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => save()} disabled={updateDocument.isPending}>
+        <div className="flex items-center gap-3">
+          <SaveStatus state={saveState} />
+          {doc.status === "draft" && (
+            <Button size="sm" onClick={publish} disabled={updateDocument.isPending}>
+              Publish
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={closeEditor} disabled={updateDocument.isPending}>
             Close
           </Button>
         </div>

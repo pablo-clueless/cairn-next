@@ -40,3 +40,26 @@ export const useSignup = () =>
 
 export const useLogout = () =>
   useApiMutation<unknown, object>({ method: "POST", url: "/v1/auth/logout" });
+
+export interface ForgotPasswordVars {
+  email: string;
+}
+
+export interface ResetPasswordVars {
+  token: string;
+  password: string;
+}
+
+/** Requests a password-reset email. Always succeeds (no account enumeration). */
+export const useForgotPassword = () =>
+  useApiMutation<unknown, ForgotPasswordVars>({
+    method: "POST",
+    url: "/v1/auth/forgot-password",
+  });
+
+/** Redeems a reset token and sets a new password. */
+export const useResetPassword = () =>
+  useApiMutation<unknown, ResetPasswordVars>({
+    method: "POST",
+    url: "/v1/auth/reset-password",
+  });
