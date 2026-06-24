@@ -164,10 +164,28 @@ export interface Issue {
   reporter_id?: string | null;
   reporter_name?: string | null;
   sprint_id?: string | null;
+  parent_id?: string | null;
+  parent_key?: string | null; // e.g. "ENG-12", joined for display
   due_date?: string | null; // YYYY-MM-DD (date-only); may include a time component from the API
   rank: number; // fractional sort key within the space
   created_at: string;
   updated_at: string;
+}
+
+/** Lateral relationship types between two issues. */
+export type IssueLinkType = "blocks" | "relates_to" | "duplicates";
+
+/** A link viewed from one issue's perspective; `issue` is the other end. */
+export interface IssueLinkView {
+  id: string;
+  type: IssueLinkType;
+  direction: "outward" | "inward";
+  issue: Issue;
+}
+
+export interface CreateLinkInput {
+  type: IssueLinkType;
+  target_key: string;
 }
 
 export type SprintStatus = "planned" | "active" | "completed";
@@ -226,6 +244,7 @@ export interface IssueUpdate {
   priority?: IssuePriority;
   assignee_id?: string; // "" unassigns
   sprint_id?: string; // "" moves the issue to the backlog
+  parent_id?: string; // "" detaches from parent
   due_date?: string; // "" clears the due date
   rank?: number; // fractional sort key for stable drag-and-drop ordering
   /** @deprecated backend ignores this; use status_id. Kept until all callers migrate. */

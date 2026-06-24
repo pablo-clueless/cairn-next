@@ -13,6 +13,7 @@ export interface IssueFilters {
   assignee?: string; // "me" or a user id
   status?: string;
   sprint?: string; // a sprint id, or "backlog" for issues with no sprint
+  parent?: string; // a parent issue id — returns that issue's children
 }
 
 function issuesUrl(slug: string, f: IssueFilters = {}) {
@@ -21,6 +22,7 @@ function issuesUrl(slug: string, f: IssueFilters = {}) {
   if (f.assignee) qs.set("assignee", f.assignee);
   if (f.status) qs.set("status", f.status);
   if (f.sprint) qs.set("sprint", f.sprint);
+  if (f.parent) qs.set("parent", f.parent);
   const q = qs.toString();
   return `/v1/orgs/${slug}/issues${q ? `?${q}` : ""}`;
 }

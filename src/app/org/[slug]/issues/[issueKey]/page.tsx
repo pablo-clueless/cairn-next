@@ -19,7 +19,9 @@ import {
 import { getApiErrorMessage } from "@/lib/client";
 import { useMembers } from "@/hooks/use-orgs";
 import { useStatuses } from "@/hooks/use-statuses";
-import { useDeleteIssue, useIssue, useUpdateIssue } from "@/hooks/use-issues";
+import { useDeleteIssue, useIssue, useIssues, useUpdateIssue } from "@/hooks/use-issues";
+import { IssueComments } from "@/components/spaces/issue-comments";
+import { IssueLinks } from "@/components/spaces/issue-links";
 import { ISSUE_PRIORITIES, ISSUE_TYPES, type IssuePriority, type IssueType } from "@/types";
 
 /** Radix Select forbids an empty-string value, so represent "no assignee" with a sentinel. */
@@ -38,6 +40,7 @@ const Page = () => {
   const issue = useIssue(slug, issueKey);
   const members = useMembers(slug);
   const statuses = useStatuses(slug, issue.data?.space_key ?? "");
+  const spaceIssues = useIssues(slug, { space: issue.data?.space_key ?? "" });
   const updateIssue = useUpdateIssue(slug);
   const deleteIssue = useDeleteIssue(slug);
 
@@ -70,6 +73,10 @@ const Page = () => {
 
   const it = issue.data;
   const dirty = title !== it.title || description !== (it.description ?? "");
+  const allIssues = spaceIssues.data ?? [];
+  const children = allIssues.filter((i) => i.parent_id === it.id);
+  // Parent candidates: any other issue in the space (the server rejects cycles).
+  const parentOptions = allIssues.filter((i) => i.id !== it.id);
 
   return (
     <div className="space-y-6">
@@ -114,6 +121,29 @@ const Page = () => {
               </Button>
             </div>
           )}
+          {children.length > 0 && (
+            <Field label="Child issues">
+              <ul className="space-y-1.5">
+                {children.map((c) => (
+                  <li key={c.id} className="flex items-center gap-2 text-sm">
+                    <Link
+                      href={`/org/${slug}/issues/${c.key}`}
+                      className="font-mono text-xs hover:underline"
+                    >
+                      {c.key}
+                    </Link>
+                    <span className="text-muted-foreground truncate">{c.title}</span>
+                  </li>
+                ))}
+              </ul>
+            </Field>
+          )}
+          <div className="border-t pt-6">
+            <IssueLinks slug={slug} issueKey={issueKey} />
+          </div>
+          <div className="border-t pt-6">
+            <IssueComments slug={slug} issueKey={issueKey} />
+          </div>
         </div>
         <div className="space-y-4">
           <Field label="Status">
@@ -139,6 +169,24 @@ const Page = () => {
                 {ISSUE_TYPES.map((t) => (
                   <SelectItem key={t.value} value={t.value} className="capitalize">
                     {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Parent">
+            <Select
+              value={it.parent_id ?? UNASSIGNED}
+              onValueChange={(v) => patch({ parent_id: v === UNASSIGNED ? "" : v })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="No parent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UNASSIGNED}>No parent</SelectItem>
+                {parentOptions.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <span className="font-mono text-xs">{p.key}</span> {p.title}
                   </SelectItem>
                 ))}
               </SelectContent>
