@@ -108,7 +108,10 @@ function StatusRow({
         onChange={(e) => setName(e.target.value)}
         onBlur={() => name.trim() && name !== status.name && patch({ name: name.trim() })}
       />
-      <Select value={status.category} onValueChange={(v) => patch({ category: v as StatusCategory })}>
+      <Select
+        value={status.category}
+        onValueChange={(v) => patch({ category: v as StatusCategory })}
+      >
         <SelectTrigger className="w-32 text-xs">
           <SelectValue />
         </SelectTrigger>
@@ -154,9 +157,9 @@ function StatusRow({
 export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKey: string }) {
   const createStatus = useCreateStatus(slug, spaceKey);
   const reorderStatuses = useReorderStatuses(slug, spaceKey);
+  const [values, setValues] = useState(defaultValues);
   const statuses = useStatuses(slug, spaceKey);
   const [open, setOpen] = useState(false);
-  const [values, setValues] = useState(defaultValues);
 
   const ordered = [...(statuses.data ?? [])].sort((a, b) => a.position - b.position);
 
@@ -204,7 +207,6 @@ export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKe
             Statuses become the columns of the {spaceKey} board. Reorder, rename, or recolor them.
           </DialogDescription>
         </DialogHeader>
-
         <div className="space-y-1.5">
           {statuses.isLoading ? (
             <div className="grid place-items-center py-6">
@@ -226,7 +228,6 @@ export function ManageStatusesDialog({ slug, spaceKey }: { slug: string; spaceKe
             <p className="text-muted-foreground py-4 text-center text-sm">No statuses yet.</p>
           )}
         </div>
-
         <form className="flex items-center gap-2 border-t pt-4" onSubmit={onAdd}>
           <input
             type="color"

@@ -6,9 +6,11 @@ import { toast } from "sonner";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/lib/client";
 import { formatRelativeTime, getInitials } from "@/lib/string";
+import { renderMentionedBody } from "@/lib/mentions";
+import { MentionTextarea, type MentionMember } from "@/components/spaces/mention-textarea";
+import { useMembers } from "@/hooks/use-orgs";
 import {
   useComments,
   useCreateComment,
@@ -26,6 +28,8 @@ interface IssueCommentsProps {
 export const IssueComments = ({ slug, issueKey }: IssueCommentsProps) => {
   const comments = useComments(slug, issueKey);
   const createComment = useCreateComment(slug, issueKey);
+  const membersQuery = useMembers(slug);
+  const members: MentionMember[] = membersQuery.data ?? [];
   const [body, setBody] = useState("");
 
   const submit = () => {
@@ -48,20 +52,14 @@ export const IssueComments = ({ slug, issueKey }: IssueCommentsProps) => {
         Comments{list.length > 0 ? ` (${list.length})` : ""}
       </h2>
 
-      <div className="flex gap-3">
-        <Textarea
-          rows={3}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Add a comment…"
-          onKeyDown={(e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-              e.preventDefault();
-              submit();
-            }
-          }}
-        />
-      </div>
+      <MentionTextarea
+        value={body}
+        onChange={setBody}
+        members={members}
+        rows={3}
+        placeholder="Add a comment… use @ to mention someone"
+        onSubmit={submit}
+      />
       <div className="flex justify-end">
         <Button disabled={!body.trim() || createComment.isPending} onClick={submit}>
           {createComment.isPending && <Loader2Icon className="size-3.5 animate-spin" />}
@@ -78,7 +76,13 @@ export const IssueComments = ({ slug, issueKey }: IssueCommentsProps) => {
       ) : (
         <ul className="space-y-4">
           {list.map((comment) => (
-            <CommentRow key={comment.id} comment={comment} slug={slug} issueKey={issueKey} />
+            <CommentRow
+              key={comment.id}
+              comment={comment}
+              slug={slug}
+              issueKey={issueKey}
+              members={members}
+            />
           ))}
         </ul>
       )}
@@ -90,9 +94,10 @@ interface CommentRowProps {
   comment: Comment;
   slug: string;
   issueKey: string;
+  members: MentionMember[];
 }
 
-const CommentRow = ({ comment, slug, issueKey }: CommentRowProps) => {
+const CommentRow = ({ comment, slug, issueKey, members }: CommentRowProps) => {
   const user = useUserStore((s) => s.user);
   const updateComment = useUpdateComment(slug, issueKey);
   const deleteComment = useDeleteComment(slug, issueKey);
@@ -140,7 +145,7 @@ const CommentRow = ({ comment, slug, issueKey }: CommentRowProps) => {
 
         {editing ? (
           <div className="space-y-2">
-            <Textarea rows={3} value={draft} onChange={(e) => setDraft(e.target.value)} />
+            <MentionTextarea value={draft} onChange={setDraft} members={members} rows={3} onSubmit={save} />
             <div className="flex gap-2">
               <Button size="sm" disabled={!draft.trim() || updateComment.isPending} onClick={save}>
                 {updateComment.isPending && <Loader2Icon className="size-3.5 animate-spin" />}
@@ -159,7 +164,7 @@ const CommentRow = ({ comment, slug, issueKey }: CommentRowProps) => {
             </div>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
+          <p className="text-sm whitespace-pre-wrap">{renderMentionedBody(comment.body)}</p>
         )}
 
         {isAuthor && !editing && (

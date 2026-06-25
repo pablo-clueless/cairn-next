@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 
 import { useMe } from "@/hooks/use-auth";
+import { NotificationPreferencesCard } from "@/components/shared/notification-preferences";
 
 const Page = () => {
   const router = useRouter();
@@ -46,6 +47,7 @@ const Page = () => {
           <p>{u.is_platform_admin ? "Platform admin" : "Member"}</p>
         </div>
       </div>
+      <NotificationPreferencesCard />
     </div>
   );
 };

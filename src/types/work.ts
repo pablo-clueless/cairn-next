@@ -188,6 +188,26 @@ export interface CreateLinkInput {
   target_key: string;
 }
 
+/** A user subscribed to an issue's activity. */
+export interface Watcher {
+  user_id: string;
+  name: string;
+  email: string;
+  created_at: string;
+}
+
+/** An audit event surfaced in an issue's activity feed. */
+export interface ActivityEvent {
+  id: string;
+  action: string; // e.g. "issue.updated", "comment.created"
+  actor_id: string | null;
+  actor_name: string | null;
+  entity_type: string;
+  entity_id: string;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export type SprintStatus = "planned" | "active" | "completed";
 
 export interface Sprint {

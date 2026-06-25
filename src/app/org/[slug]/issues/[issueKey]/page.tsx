@@ -1,14 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeftIcon, Loader2Icon, Trash2Icon } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { subDays } from "date-fns";
 import { toast } from "sonner";
+import Link from "next/link";
 
+import { ISSUE_PRIORITIES, ISSUE_TYPES, type IssuePriority, type IssueType } from "@/types";
+import { useDeleteIssue, useIssue, useIssues, useUpdateIssue } from "@/hooks/use-issues";
+import { useIssueRealtime } from "@/hooks/use-realtime";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/string";
+import { useUserStore } from "@/store";
+import { IssueWatchButton } from "@/components/spaces/issue-watch-button";
+import { IssueActivity } from "@/components/spaces/issue-activity";
+import { IssueAttachments } from "@/components/spaces/issue-attachments";
+import { IssueComments } from "@/components/spaces/issue-comments";
+import { IssueLinks } from "@/components/spaces/issue-links";
+import { Textarea } from "@/components/ui/textarea";
+import { useStatuses } from "@/hooks/use-statuses";
+import { getApiErrorMessage } from "@/lib/client";
+import { DatePicker } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useMembers } from "@/hooks/use-orgs";
 import {
   Select,
   SelectContent,
@@ -16,13 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getApiErrorMessage } from "@/lib/client";
-import { useMembers } from "@/hooks/use-orgs";
-import { useStatuses } from "@/hooks/use-statuses";
-import { useDeleteIssue, useIssue, useIssues, useUpdateIssue } from "@/hooks/use-issues";
-import { IssueComments } from "@/components/spaces/issue-comments";
-import { IssueLinks } from "@/components/spaces/issue-links";
-import { ISSUE_PRIORITIES, ISSUE_TYPES, type IssuePriority, type IssueType } from "@/types";
 
 /** Radix Select forbids an empty-string value, so represent "no assignee" with a sentinel. */
 const UNASSIGNED = "__unassigned__";
@@ -41,6 +50,8 @@ const Page = () => {
   const members = useMembers(slug);
   const statuses = useStatuses(slug, issue.data?.space_key ?? "");
   const spaceIssues = useIssues(slug, { space: issue.data?.space_key ?? "" });
+  const viewers = useIssueRealtime(slug, issueKey, issue.data?.id);
+  const me = useUserStore((s) => s.user);
   const updateIssue = useUpdateIssue(slug);
   const deleteIssue = useDeleteIssue(slug);
 
@@ -77,15 +88,31 @@ const Page = () => {
   const children = allIssues.filter((i) => i.parent_id === it.id);
   // Parent candidates: any other issue in the space (the server rejects cycles).
   const parentOptions = allIssues.filter((i) => i.id !== it.id);
+  // Co-viewers currently in this issue's realtime room, excluding yourself.
+  const others = viewers.filter((v) => v.id !== me?.id);
 
   return (
     <div className="space-y-6">
-      <Link
-        href={`/org/${slug}/spaces/${it.space_key}`}
-        className="text-muted-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ArrowLeftIcon className="size-3.5" /> {it.space_key}
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          href={`/org/${slug}/spaces/${it.space_key}`}
+          className="text-muted-foreground inline-flex items-center gap-1 text-sm"
+        >
+          <ArrowLeftIcon className="size-3.5" /> {it.space_key}
+        </Link>
+        {others.length > 0 && (
+          <div className="flex items-center gap-1.5" title={others.map((v) => v.name).join(", ")}>
+            <div className="flex -space-x-2">
+              {others.slice(0, 4).map((v) => (
+                <Avatar key={v.id} className="size-6 ring-background ring-2">
+                  <AvatarFallback className="text-[9px]">{getInitials(v.name)}</AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+            <span className="text-muted-foreground text-xs">viewing</span>
+          </div>
+        )}
+      </div>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="space-y-4 md:col-span-2">
           <p className="text-muted-foreground font-mono text-xs">{it.key}</p>
@@ -142,10 +169,17 @@ const Page = () => {
             <IssueLinks slug={slug} issueKey={issueKey} />
           </div>
           <div className="border-t pt-6">
+            <IssueAttachments slug={slug} issueKey={issueKey} />
+          </div>
+          <div className="border-t pt-6">
             <IssueComments slug={slug} issueKey={issueKey} />
+          </div>
+          <div className="border-t pt-6">
+            <IssueActivity slug={slug} issueKey={issueKey} />
           </div>
         </div>
         <div className="space-y-4">
+          <IssueWatchButton slug={slug} issueKey={issueKey} />
           <Field label="Status">
             <Select value={it.status_id} onValueChange={(v) => patch({ status_id: v })}>
               <SelectTrigger className="w-full">
@@ -228,10 +262,11 @@ const Page = () => {
             </Select>
           </Field>
           <Field label="Due date">
-            <Input
-              type="date"
-              value={it.due_date ? it.due_date.slice(0, 10) : ""}
-              onChange={(e) => patch({ due_date: e.target.value })}
+            <DatePicker
+              type="single"
+              onValueChange={(value) => value && patch({ due_date: new Date(value).toISOString() })}
+              value={it.due_date ? new Date(it.due_date) : undefined}
+              minDate={subDays(new Date(), 1)}
             />
           </Field>
           <Field label="Reporter">

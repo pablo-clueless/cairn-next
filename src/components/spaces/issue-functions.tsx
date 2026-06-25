@@ -1,10 +1,9 @@
 import { ListFilter, MoreHorizontal, TrendingUp } from "lucide-react";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { ManageStatusesDialog } from "./manage-statuses-dialog";
 import { ManageTransitionsDialog } from "./manage-transitions-dialog";
+import { ManageStatusesDialog } from "./manage-statuses-dialog";
 import type { Member, QueryReturn } from "@/types";
 import { getInitials } from "@/lib/string";
 import { Button } from "../ui/button";
@@ -18,16 +17,15 @@ interface Props {
   slug: string;
   spaceKey: string;
   onCompleteSprint?: () => void;
-  showGroup?: boolean;
   showTrend?: boolean;
 }
 
-const GROUPS = [
-  { label: "None", value: "none" },
-  { label: "Assignee", value: "assignee" },
-  { label: "Epic", value: "epic" },
-  { label: "Subtask", value: "subtask" },
-];
+// const GROUPS = [
+//   { label: "None", value: "none" },
+//   { label: "Assignee", value: "assignee" },
+//   { label: "Epic", value: "epic" },
+//   { label: "Subtask", value: "subtask" },
+// ];
 
 export const IssueFunctions = ({
   slug,
@@ -35,7 +33,6 @@ export const IssueFunctions = ({
   members,
   onCompleteSprint,
   onSearch,
-  showGroup = true,
   showTrend = true,
 }: Props) => {
   const assignees = [
@@ -83,20 +80,6 @@ export const IssueFunctions = ({
           <Button className="w-32" onClick={onCompleteSprint}>
             Complete Sprint
           </Button>
-        )}
-        {showGroup && (
-          <Select>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Group" />
-            </SelectTrigger>
-            <SelectContent align="center" className="w-32">
-              {GROUPS.map((group) => (
-                <SelectItem key={group.value} value={group.value}>
-                  {group.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         )}
         {showTrend && (
           <Button size="icon" variant="outline">

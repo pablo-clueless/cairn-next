@@ -57,7 +57,6 @@ export function ManageTransitionsDialog({ slug, spaceKey }: { slug: string; spac
             status.
           </DialogDescription>
         </DialogHeader>
-
         {loading ? (
           <div className="grid place-items-center py-8">
             <Loader2Icon className="text-muted-foreground size-5 animate-spin" />
@@ -65,8 +64,6 @@ export function ManageTransitionsDialog({ slug, spaceKey }: { slug: string; spac
         ) : list.length === 0 ? (
           <p className="text-muted-foreground py-6 text-center text-sm">Add some statuses first.</p>
         ) : (
-          // Remounts each time the dialog opens, so it seeds from the saved
-          // workflow via a useState initializer (no state-syncing effect).
           <TransitionMatrix
             statuses={list}
             initial={transitions.data ?? []}
@@ -166,7 +163,6 @@ function TransitionMatrix({
           </tbody>
         </table>
       </div>
-
       <div className="flex items-center justify-between border-t pt-4">
         <span className="text-muted-foreground text-xs">
           {edges.size === 0

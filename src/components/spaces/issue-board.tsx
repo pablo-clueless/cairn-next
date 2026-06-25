@@ -4,15 +4,21 @@ import { Loader2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { useTransitions, isTransitionAllowed } from "@/hooks/use-transitions";
+import { useStatuses, useReorderStatuses } from "@/hooks/use-statuses";
+import { useIssues, useUpdateIssue } from "@/hooks/use-issues";
+import { ISSUE_PRIORITIES, type Issue } from "@/types";
+import { IssueFunctions } from "./issue-functions";
+import { getApiErrorMessage } from "@/lib/client";
+import { useSprints } from "@/hooks/use-sprints";
+import { useMembers } from "@/hooks/use-orgs";
+import { rankBetween } from "@/lib/rank";
+import { IssueCard } from "./issue-card";
 import {
   Kanban,
   type KanbanColumnConfig,
   type KanbanDragEndEvent,
 } from "@/components/shared/kanban";
-import { useStatuses, useReorderStatuses } from "@/hooks/use-statuses";
-import { useTransitions, isTransitionAllowed } from "@/hooks/use-transitions";
-import { useIssues, useUpdateIssue } from "@/hooks/use-issues";
-import { useSprints } from "@/hooks/use-sprints";
 import {
   Select,
   SelectContent,
@@ -20,12 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IssueFunctions } from "./issue-functions";
-import { getApiErrorMessage } from "@/lib/client";
-import { rankBetween } from "@/lib/rank";
-import { useMembers } from "@/hooks/use-orgs";
-import { IssueCard } from "./issue-card";
-import { ISSUE_PRIORITIES, type Issue } from "@/types";
 
 // Board scope: all issues, just the backlog, or a single sprint (the Scrum view).
 const ALL = "all";

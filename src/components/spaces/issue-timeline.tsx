@@ -275,7 +275,6 @@ export const IssueTimeline = ({ slug, spaceKey }: { slug: string; spaceKey: stri
         members={members}
         onFilterChange={() => {}}
         onSearch={setQuery}
-        showGroup={false}
         showTrend={false}
       />
       {/* One scroll container so both panes share vertical scroll; the Work

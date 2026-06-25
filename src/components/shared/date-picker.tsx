@@ -78,7 +78,7 @@ export const DatePicker = (props: Props) => {
                 type="button"
                 disabled={disabled}
                 className={cn(
-                  "flex h-10 flex-1 items-center justify-between gap-x-2 rounded-xs border border-neutral-300 bg-white px-3 text-sm transition-colors",
+                  "flex h-8 flex-1 items-center justify-between gap-x-2 rounded-xs border border-neutral-300 bg-white px-3 text-sm transition-colors",
                   "focus:border-primary-500 hover:border-neutral-400 focus:outline-none",
                   disabled && "cursor-not-allowed opacity-50",
                   !fromDisplay && "text-neutral-400",
@@ -92,7 +92,7 @@ export const DatePicker = (props: Props) => {
                 type="button"
                 disabled={disabled}
                 className={cn(
-                  "flex h-10 flex-1 items-center justify-between gap-x-2 rounded-xs border border-neutral-300 bg-white px-3 text-sm transition-colors",
+                  "flex h-8 flex-1 items-center justify-between gap-x-2 rounded-xs border border-neutral-300 bg-white px-3 text-sm transition-colors",
                   "focus:border-primary-500 hover:border-neutral-400 focus:outline-none",
                   disabled && "cursor-not-allowed opacity-50",
                   !toDisplay && "text-neutral-400",
@@ -135,7 +135,7 @@ export const DatePicker = (props: Props) => {
             type="button"
             disabled={disabled}
             className={cn(
-              "flex h-10 w-full items-center justify-between gap-x-2 rounded-xs border border-neutral-300 bg-white px-3 text-sm transition-colors",
+              "flex h-8 w-full items-center justify-between gap-x-2 rounded-xs border border-neutral-300 bg-white px-3 text-sm transition-colors",
               "focus:border-primary-500 f hover:border-neutral-400 focus:outline-none",
               disabled && "cursor-not-allowed opacity-50",
               !displayValue && "text-neutral-400",
