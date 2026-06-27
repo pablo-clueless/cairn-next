@@ -11,7 +11,6 @@ import {
   User,
 } from "lucide-react";
 
-/** A dynamically-added child of an expandable route (a single space, dashboard or filter). */
 export interface RouteItem {
   id: string;
   name: string;
@@ -19,7 +18,6 @@ export interface RouteItem {
 
 export interface RouteConfig {
   label: string;
-  /** Path relative to the active org root, i.e. `/org/<slug>/<segment>`. */
   segment: string;
   icon: LucideIcon;
   /**

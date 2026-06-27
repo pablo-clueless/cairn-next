@@ -210,9 +210,7 @@ function KanbanColumn<T extends KanbanItemBase>({
                 title={limit > 0 ? `WIP limit: ${limit}` : undefined}
                 className={cn(
                   "grid min-w-5 place-items-center rounded-full px-1 text-xs font-medium",
-                  over
-                    ? "bg-red-500 text-white"
-                    : "bg-neutral-200 dark:bg-neutral-700",
+                  over ? "bg-red-500 text-white" : "bg-neutral-200 dark:bg-neutral-700",
                 )}
               >
                 {limit > 0 ? `${items.length}/${limit}` : items.length}
@@ -277,7 +275,7 @@ function KanbanColumn<T extends KanbanItemBase>({
                 <div
                   data-slot="kanban-empty-state"
                   className={cn(
-                    "grid min-h-24 place-items-center rounded-xs border border-dashed",
+                    "grid min-h-31.5 place-items-center rounded-xs border border-dashed",
                     "border-neutral-300 dark:border-neutral-600",
                   )}
                 >

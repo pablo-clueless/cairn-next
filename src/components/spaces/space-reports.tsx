@@ -3,6 +3,7 @@
 import { Loader2Icon } from "lucide-react";
 
 import { useIssues } from "@/hooks/use-issues";
+import { SpaceAgileReports } from "@/components/spaces/space-agile-reports";
 import {
   ISSUE_PRIORITIES,
   ISSUE_TYPES,
@@ -54,25 +55,31 @@ export function SpaceReports({ slug, spaceKey }: { slug: string; spaceKey: strin
   const tally = (pred: (i: Issue) => boolean) => all.filter(pred).length;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      <BarChart
-        title="Status"
-        rows={STATUS_CATEGORIES.map((s) => ({
-          label: STATUS_CATEGORY_LABELS[s],
-          value: tally((i) => i.status_category === s),
-        }))}
-      />
-      <BarChart
-        title="Type"
-        rows={ISSUE_TYPES.map((t) => ({ label: t.label, value: tally((i) => i.type === t.value) }))}
-      />
-      <BarChart
-        title="Priority"
-        rows={ISSUE_PRIORITIES.map((p) => ({
-          label: p.label,
-          value: tally((i) => i.priority === p.value),
-        }))}
-      />
+    <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <BarChart
+          title="Status"
+          rows={STATUS_CATEGORIES.map((s) => ({
+            label: STATUS_CATEGORY_LABELS[s],
+            value: tally((i) => i.status_category === s),
+          }))}
+        />
+        <BarChart
+          title="Type"
+          rows={ISSUE_TYPES.map((t) => ({
+            label: t.label,
+            value: tally((i) => i.type === t.value),
+          }))}
+        />
+        <BarChart
+          title="Priority"
+          rows={ISSUE_PRIORITIES.map((p) => ({
+            label: p.label,
+            value: tally((i) => i.priority === p.value),
+          }))}
+        />
+      </div>
+      <SpaceAgileReports slug={slug} spaceKey={spaceKey} />
     </div>
   );
 }

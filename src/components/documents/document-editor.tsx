@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useDocument, useUpdateDocument } from "@/hooks/use-documents";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { TextEditor } from "../shared/rich-text-editor";
+import { Whiteboard } from "./whiteboard";
 import { getApiErrorMessage } from "@/lib/client";
 import { getInitials } from "@/lib/string";
 import type { IDocument } from "@/types";
@@ -147,7 +148,7 @@ const EditorBody = ({
             </span>
           )}
           <span className="text-muted-foreground text-xs capitalize">
-            {doc.type === "live" ? "Live doc" : "Page"}
+            {doc.type === "live" ? "Live doc" : doc.type === "whiteboard" ? "Whiteboard" : "Page"}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -163,35 +164,50 @@ const EditorBody = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
-        <div className="mx-auto max-w-3xl space-y-4">
+      {doc.type === "whiteboard" ? (
+        <div className="flex flex-1 flex-col gap-3 overflow-hidden px-6 py-4 sm:px-8">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Give this page a title"
+            placeholder="Name this whiteboard"
             className={cn(
-              "w-full border-none bg-transparent text-3xl font-semibold outline-none",
+              "w-full border-none bg-transparent text-2xl font-semibold outline-none",
               "placeholder:text-muted-foreground/50",
             )}
           />
-          {doc.owner_name && (
-            <div className="text-muted-foreground flex items-center gap-2 text-sm">
-              <span className="bg-brand grid size-6 place-items-center rounded-full text-[10px] font-medium text-white">
-                {getInitials(doc.owner_name)}
-              </span>
-              By {doc.owner_name}
-            </div>
-          )}
-          <TextEditor
-            editable
-            value={content}
-            initialValue={doc.content}
-            onValueChange={setContent}
-            className="border-none shadow-none focus-within:shadow-none focus-within:ring-0"
-            editorClassName="min-h-[50vh]"
-          />
+          <Whiteboard initialValue={doc.content} onChange={setContent} />
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-10">
+          <div className="mx-auto max-w-3xl space-y-4">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Give this page a title"
+              className={cn(
+                "w-full border-none bg-transparent text-3xl font-semibold outline-none",
+                "placeholder:text-muted-foreground/50",
+              )}
+            />
+            {doc.owner_name && (
+              <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                <span className="bg-brand grid size-6 place-items-center rounded-full text-[10px] font-medium text-white">
+                  {getInitials(doc.owner_name)}
+                </span>
+                By {doc.owner_name}
+              </div>
+            )}
+            <TextEditor
+              editable
+              value={content}
+              initialValue={doc.content}
+              onValueChange={setContent}
+              className="border-none shadow-none focus-within:shadow-none focus-within:ring-0"
+              editorClassName="min-h-[50vh]"
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };

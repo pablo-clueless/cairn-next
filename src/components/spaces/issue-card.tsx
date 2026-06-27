@@ -11,7 +11,7 @@ export function IssueCard({ issue }: { issue: Issue }) {
   const { slug } = useParams<{ slug: string }>();
 
   return (
-    <div className="space-y-2.25">
+    <div className="h-25 space-y-2.25">
       <p className="text-muted-foreground font-mono text-xs">{issue.key}</p>
       <Link
         href={`/org/${slug}/issues/${issue.key}`}

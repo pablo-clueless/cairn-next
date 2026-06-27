@@ -9,9 +9,10 @@ import Link from "next/link";
 import { USER_ROUTES, PLATFORM_ROUTES, type RouteItem, type RouteConfig } from "@/config/routes";
 import { useAppContext } from "../providers";
 import type { HttpResponse } from "@/types";
-import { cn } from "@/lib/utils";
 import { useApiQuery } from "@/lib/query";
+import { cn } from "@/lib/utils";
 import { Logo } from "./logo";
+import { Create } from "../spaces/create";
 
 /** Hook: the active org slug from the route. */
 const useSlug = () => useParams<{ slug: string }>().slug;
@@ -116,15 +117,18 @@ const NavGroup = ({ route }: { route: RouteConfig }) => {
             {!isCollapsed && <NavLabel>{label}</NavLabel>}
           </AnimatePresence>
         </button>
-        {!isCollapsed && (
-          <motion.span
-            animate={{ rotate: open ? 180 : 0 }}
-            className="block"
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="size-4" />
-          </motion.span>
-        )}
+        <div className="flex items-center gap-x-2">
+          {!isCollapsed && (
+            <motion.span
+              animate={{ rotate: open ? 180 : 0 }}
+              className="block"
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="size-4" />
+            </motion.span>
+          )}
+          <Create segment={route.segment} />
+        </div>
       </div>
       <AnimatePresence initial={false}>
         {expanded && (

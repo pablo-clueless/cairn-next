@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "../ui/ava
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ManageTransitionsDialog } from "./manage-transitions-dialog";
 import { ManageStatusesDialog } from "./manage-statuses-dialog";
+import { ManageSpaceMembersDialog } from "./manage-space-members-dialog";
 import type { Member, QueryReturn } from "@/types";
 import { getInitials } from "@/lib/string";
 import { Button } from "../ui/button";
@@ -86,6 +87,7 @@ export const IssueFunctions = ({
             <TrendingUp className="size-4" />
           </Button>
         )}
+        <ManageSpaceMembersDialog slug={slug} spaceKey={spaceKey} />
         <ManageStatusesDialog slug={slug} spaceKey={spaceKey} />
         <ManageTransitionsDialog slug={slug} spaceKey={spaceKey} />
         <Popover>

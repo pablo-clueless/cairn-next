@@ -28,6 +28,7 @@ export interface Invitation {
   organization_id: string;
   email: string;
   role: Role;
+  space_id?: string | null; // target space, or null for an org-only invite
   invited_by?: string | null;
   expires_at: Date;
   accepted_at?: Date | null;

@@ -28,11 +28,11 @@ const CREATE_OPTIONS: { label: string; value: DocumentType; icon: typeof FilePen
 
 export const IssueDocuments = ({ slug, spaceKey }: { slug: string; spaceKey: string }) => {
   const { onValueChange, values } = useValues({ search: "", sort: "", type: "" });
-  const documents = useDocuments(slug, spaceKey);
+  const [editorId, setEditorId] = useState<string | null>(null);
   const createDocument = useCreateDocument(slug, spaceKey);
   const deleteDocument = useDeleteDocument(slug, spaceKey);
-  const [editorId, setEditorId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const documents = useDocuments(slug, spaceKey);
 
   const all = documents.data ?? [];
   const parentIds = new Set(all.filter((d) => d.parent_id).map((d) => d.parent_id));
@@ -60,10 +60,6 @@ export const IssueDocuments = ({ slug, spaceKey }: { slug: string; spaceKey: str
 
   const handleCreate = (type: DocumentType, parentId?: string) => {
     setCreateOpen(false);
-    if (type === "whiteboard") {
-      toast.info("Whiteboards are coming soon.");
-      return;
-    }
     createDocument.mutate(
       { type, parent_id: parentId ?? null, title: "" },
       {
@@ -151,7 +147,7 @@ export const IssueDocuments = ({ slug, spaceKey }: { slug: string; spaceKey: str
                 <Plus className="size-4" /> Create
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-40 p-1 gap-1">
+            <PopoverContent align="start" className="w-40 gap-1 p-1">
               {CREATE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
