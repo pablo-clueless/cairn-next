@@ -39,3 +39,12 @@ export interface InviteResult {
   invitation: Invitation;
   accept_url: string;
 }
+
+/** Public, recipient-facing view of an invitation, looked up by token. */
+export interface InvitePreview {
+  email: string;
+  org_name: string;
+  role: Role;
+  expires_at: Date;
+  status: "pending" | "expired" | "accepted";
+}

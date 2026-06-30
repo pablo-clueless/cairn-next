@@ -127,7 +127,7 @@ const NavGroup = ({ route }: { route: RouteConfig }) => {
               <ChevronDown className="size-4" />
             </motion.span>
           )}
-          <Create segment={route.segment} />
+          <Create segment={route.segment} slug={slug} />
         </div>
       </div>
       <AnimatePresence initial={false}>

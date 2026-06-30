@@ -6,13 +6,23 @@ import Link from "next/link";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CreateIssueDialog, SpaceTabNav } from "@/components/spaces";
+import { ScrollArea } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { useSpace } from "@/hooks/use-spaces";
+import { useMembers } from "@/hooks/use-orgs";
 import { useOrg } from "@/hooks/use-orgs";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export default function SpaceLayout({ children }: { children: React.ReactNode }) {
   const { slug, spaceKey } = useParams<{ slug: string; spaceKey: string }>();
   const space = useSpace(slug, spaceKey);
+  const members = useMembers(slug);
   const org = useOrg(slug);
   const canCreate = org.data?.role !== "guest";
 
@@ -40,9 +50,26 @@ export default function SpaceLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-xl font-semibold">{space.data.name}</h1>
             <span className="bg-muted rounded px-1.5 py-0.5 text-xs">{space.data.key}</span>
-            <Button size="icon" variant="outline">
-              <Users className="size-4" />
-            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="outline">
+                  <Users className="size-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <div className="">
+                  <SheetTitle></SheetTitle>
+                  <SheetDescription></SheetDescription>
+                </div>
+                <ScrollArea className="min-h-0">
+                  <div className="w-full space-y-2">
+                    {members.data?.map((member) => (
+                      <div className="" key={member.user_id}></div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
             <Popover>
               <PopoverTrigger asChild>
                 <Button size="icon" variant="ghost">

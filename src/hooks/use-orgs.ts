@@ -8,6 +8,7 @@ import type {
   HttpResponse,
   Invitation,
   InvitableRole,
+  InvitePreview,
   InviteResult,
   Member,
   Organization,
@@ -58,6 +59,14 @@ export const useInvite = (orgId: string) =>
     url: `/v1/orgs/${orgId}/invitations`,
     transform: data<InviteResult>,
     invalidates: [invitesKey(orgId)],
+  });
+
+/** Public preview of an invitation by token — who it's for, which org, status. */
+export const useInvitePreview = (token: string) =>
+  useApiQuery<InvitePreview>({
+    url: `/v1/invitations/${token}`,
+    enabled: Boolean(token),
+    transform: data<InvitePreview>,
   });
 
 /** Accept an invitation by PATCHing the invitation resource (by token). */

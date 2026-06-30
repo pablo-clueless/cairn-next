@@ -86,6 +86,20 @@ export const useInviteToSpace = (slug: string, spaceKey: string) => {
   });
 };
 
+/** Re-send a pending invite: rotates the token, extends expiry, re-emails. */
+export const useResendSpaceInvitation = (slug: string, spaceKey: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inviteId: string) =>
+      http
+        .patch<HttpResponse<SpaceInviteResult>>(`${invitesUrl(slug, spaceKey)}/${inviteId}`, {
+          status: "resent",
+        })
+        .then((env) => env.data),
+    onSuccess: () => qc.invalidateQueries({ predicate: invitesMatch(slug, spaceKey) }),
+  });
+};
+
 export const useDeleteSpaceInvitation = (slug: string, spaceKey: string) => {
   const qc = useQueryClient();
   return useMutation({

@@ -1,9 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { Loader2Icon, MailIcon, UsersIcon, XIcon } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { getApiErrorMessage } from "@/lib/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useMembers } from "@/hooks/use-orgs";
+import { getInitials } from "@/lib/string";
+import { Badge } from "../ui/badge";
+import {
+  useAddSpaceMember,
+  useDeleteSpaceInvitation,
+  useInviteToSpace,
+  useRemoveSpaceMember,
+  useResendSpaceInvitation,
+  useSpaceInvitations,
+  useSpaceMembers,
+} from "@/hooks/use-space-members";
 import {
   Dialog,
   DialogContent,
@@ -19,20 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { getApiErrorMessage } from "@/lib/client";
-import { getInitials } from "@/lib/string";
-import { useMembers } from "@/hooks/use-orgs";
-import {
-  useAddSpaceMember,
-  useDeleteSpaceInvitation,
-  useInviteToSpace,
-  useRemoveSpaceMember,
-  useSpaceInvitations,
-  useSpaceMembers,
-} from "@/hooks/use-space-members";
 
 interface Props {
   slug: string;
@@ -48,7 +50,10 @@ export const ManageSpaceMembersDialog = ({ slug, spaceKey }: Props) => {
   const addMember = useAddSpaceMember(slug, spaceKey);
   const removeMember = useRemoveSpaceMember(slug, spaceKey);
   const invite = useInviteToSpace(slug, spaceKey);
+  const resend = useResendSpaceInvitation(slug, spaceKey);
   const revoke = useDeleteSpaceInvitation(slug, spaceKey);
+
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const [email, setEmail] = useState("");
 
@@ -73,6 +78,15 @@ export const ManageSpaceMembersDialog = ({ slug, spaceKey }: Props) => {
         onError: (e) => toast.error(getApiErrorMessage(e)),
       },
     );
+  };
+
+  const resendInvite = (inv: { id: string; email: string }) => {
+    setResendingId(inv.id);
+    resend.mutate(inv.id, {
+      onSuccess: () => toast.success(`Invitation re-sent to ${inv.email}`),
+      onError: (e) => toast.error(getApiErrorMessage(e)),
+      onSettled: () => setResendingId(null),
+    });
   };
 
   return (
@@ -174,23 +188,43 @@ export const ManageSpaceMembersDialog = ({ slug, spaceKey }: Props) => {
               <p className="text-xs font-medium">Pending invitations</p>
               <ul className="space-y-1.5">
                 {pending.map((inv) => (
-                  <li key={inv.id} className="flex items-center gap-2 text-sm">
-                    <MailIcon className="text-muted-foreground size-3.5 shrink-0" />
-                    <span className="truncate">{inv.email}</span>
-                    <span className="text-muted-foreground ml-auto text-xs">pending</span>
-                    <button
-                      type="button"
-                      aria-label="Revoke invitation"
-                      className="text-muted-foreground hover:text-destructive shrink-0"
-                      disabled={revoke.isPending}
-                      onClick={() =>
-                        revoke.mutate(inv.id, {
-                          onError: (e) => toast.error(getApiErrorMessage(e)),
-                        })
-                      }
-                    >
-                      <XIcon className="size-3.5" />
-                    </button>
+                  <li key={inv.id} className="flex items-center justify-between gap-2 text-sm">
+                    <div className="flex items-center gap-x-1">
+                      <MailIcon className="text-muted-foreground size-3.5 shrink-0" />
+                      <span className="truncate">{inv.email}</span>
+                      <Badge size="sm" variant="warning">
+                        Pending
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-x-2">
+                      <Button
+                        aria-label="Re-send invitation"
+                        disabled={resend.isPending}
+                        onClick={() => resendInvite(inv)}
+                        size="xs"
+                        title="Re-send invitation"
+                        type="button"
+                      >
+                        {resendingId === inv.id ? (
+                          <Loader2Icon className="size-3 animate-spin" />
+                        ) : (
+                          "Resend Invite"
+                        )}
+                      </Button>
+                      <button
+                        type="button"
+                        aria-label="Revoke invitation"
+                        className="text-muted-foreground hover:text-destructive shrink-0"
+                        disabled={revoke.isPending}
+                        onClick={() =>
+                          revoke.mutate(inv.id, {
+                            onError: (e) => toast.error(getApiErrorMessage(e)),
+                          })
+                        }
+                      >
+                        <XIcon className="size-3.5" />
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

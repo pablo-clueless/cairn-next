@@ -1,9 +1,10 @@
 "use client";
 
 import { ChevronDown, ChevronRight, GripVertical, Loader2Icon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -23,7 +24,6 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 
 import { useSprints, useUpdateSprint } from "@/hooks/use-sprints";
 import { IssueFunctions } from "./issue-functions";
@@ -217,7 +217,10 @@ export function IssueBacklog({ slug, spaceKey }: { slug: string; spaceKey: strin
     // dropping on the section appends to the end).
     const groupItems = all.filter((i) => groupOf(i) === target && i.id !== issue.id);
     const at = overIssueId
-      ? Math.max(0, groupItems.findIndex((i) => i.id === overIssueId))
+      ? Math.max(
+          0,
+          groupItems.findIndex((i) => i.id === overIssueId),
+        )
       : groupItems.length;
     const rank = rankBetween(groupItems[at - 1]?.rank, groupItems[at]?.rank);
 
